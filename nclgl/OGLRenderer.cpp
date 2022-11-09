@@ -160,6 +160,17 @@ bool OGLRenderer::HasInitialised() const{
 	return init;
 }
 
+void OGLRenderer::SetTextureRepeating(GLuint target, bool repeating) {
+	glBindTexture(GL_TEXTURE_2D, target);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void OGLRenderer::SetUniform1i(const char* name, int value) {
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), name), value);
+}
+
 /*
 Resizes the rendering area. Should only be called by the Window class!
 Does lower bounds checking on input values, so should be reasonably safe

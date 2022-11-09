@@ -2,6 +2,7 @@
 #include "../NCLGL/OGLRenderer.h"
 
 class Camera;
+class HeightMap;
 
 class Renderer : public OGLRenderer	{
 public:
@@ -12,6 +13,8 @@ public:
 protected:
 	Camera* camera = nullptr;
 
-	Mesh* triangle = nullptr;
-	Shader* basicShader = nullptr;
+	HeightMap* heightMap = nullptr;
+	Shader* shader = nullptr;
+
+	GLuint earthTex;
 };
