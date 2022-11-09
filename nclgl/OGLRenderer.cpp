@@ -13,7 +13,10 @@ _-_-_-_-_-_-_-""  ""
 
 */
 #include "OGLRenderer.h"
+
+#include "Light.h"
 #include "Shader.h"
+
 #include <algorithm>
 
 using std::string;
@@ -160,6 +163,12 @@ bool OGLRenderer::HasInitialised() const{
 	return init;
 }
 
+void OGLRenderer::SetShaderLight(const Light* light) {
+	glUniform3fv(UniformLocation("lightPos"), 1, (float*)&light->position);
+	glUniform4fv(UniformLocation("lightColour"), 1, (float*)&light->colour);
+	glUniform1f(UniformLocation("lightRadius"), light->radius);
+}
+
 void OGLRenderer::SetTextureRepeating(GLuint target, bool repeating) {
 	glBindTexture(GL_TEXTURE_2D, target);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
@@ -167,8 +176,8 @@ void OGLRenderer::SetTextureRepeating(GLuint target, bool repeating) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void OGLRenderer::SetUniform1i(const char* name, int value) {
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), name), value);
+GLint OGLRenderer::UniformLocation(const GLchar* name) {
+	return glGetUniformLocation(currentShader->GetProgram(), name);
 }
 
 /*

@@ -58,9 +58,10 @@ public:
 	bool			HasInitialised() const;	
 	
 protected:
+	void SetShaderLight(const Light* light);
 	void SetTextureRepeating(GLuint target, bool repeating);
 
-	void SetUniform1i(const char* name, int value);
+	GLint UniformLocation(const GLchar* name);
 
 	virtual void	Resize(int x, int y);	
 	void			UpdateShaderMatrices();

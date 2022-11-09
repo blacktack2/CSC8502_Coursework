@@ -87,6 +87,7 @@ public:
 	bool GetVertexIndicesForTri(unsigned int i, unsigned int& a, unsigned int& b, unsigned int& c) const;
 
 	static Mesh* GenerateTriangle();
+	static Mesh* GenerateQuad();
 protected:
 	void GenerateTangents();
 	Vector4 GenerateTangent(int a, int b, int c);
