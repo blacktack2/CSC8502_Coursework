@@ -2,6 +2,7 @@
 
 #include "../nclgl/HeightMap.h"
 #include "../nclgl/Light.h"
+#include "../nclgl/LightNode.h"
 
 #include <algorithm>
 
@@ -33,10 +34,8 @@ DemoSceneNode::DemoSceneNode() {
 	heightMapNode->AddChild(pointLightsNode);
 
 	for (int i = 0; i < 10; i++) {
-		SceneNode* lightNode = new SceneNode();
-		pointLightsNode->AddChild(lightNode);
-		lightNode->light = new Light(
-			Vector4(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z, 1.0f),
+		SceneNode* lightNode = new PointLightNode(
+			Vector3(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z),
 			Vector4(
 				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
 				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
@@ -45,6 +44,7 @@ DemoSceneNode::DemoSceneNode() {
 			),
 			250.0f + (rand() % 500)
 		);
+		pointLightsNode->AddChild(lightNode);
 		lightNode->lightMesh = sphere;
 	}
 
@@ -52,10 +52,8 @@ DemoSceneNode::DemoSceneNode() {
 	heightMapNode->AddChild(spotLightsNode);
 
 	for (int i = 0; i < 10; i++) {
-		SceneNode* lightNode = new SceneNode();
-		spotLightsNode->AddChild(lightNode);
-		lightNode->light = new Light(
-			Vector4(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z, 1.0f),
+		SceneNode* lightNode = new SpotLightNode(
+			Vector3(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z),
 			Vector4(
 				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
 				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
@@ -66,16 +64,12 @@ DemoSceneNode::DemoSceneNode() {
 			Vector3(-0.5f + (rand() * (1.0f / (float)RAND_MAX)), 1.0f, -0.5f + (rand() * (1.0f / (float)RAND_MAX))),
 			20.0f + (rand() % 80)
 		);
+		spotLightsNode->AddChild(lightNode);
 		lightNode->lightMesh = sphere;
 	}
 
-	dirLightNode = new SceneNode();
+	dirLightNode = new DirectionLightNode(Vector3(1.0f, 1.0f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 	AddChild(dirLightNode);
-	dirLightNode->light = new Light(
-		Vector4(1.0f, 1.0f, 1.0f, 0.0f),
-		Vector4(0.4f, 0.4f, 0.4f, 1.0f),
-		10000.0f
-	);
 	dirLightNode->lightMesh = cube;
 }
 

@@ -37,6 +37,7 @@
     <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="LightNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
@@ -86,6 +87,7 @@
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="LightNode.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GLAD">
