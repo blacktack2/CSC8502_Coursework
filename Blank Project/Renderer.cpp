@@ -9,13 +9,14 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	heightMap = new HeightMap(TEXTUREDIR"noise.png");
 	sphere = Mesh::LoadFromMeshFile("Sphere.msh");
+	cube = Mesh::LoadFromMeshFile("Cube.msh");
 	quad = Mesh::GenerateQuad();
 	Vector3 heightMapSize = heightMap->GetSize();
 
 	camera->SetPosition(heightMapSize * Vector3(0.5f, 2.0f, 0.5f));
 
 	sceneShader = new Shader("buffer.vert", "buffer.frag");
-	pointLightShader = new Shader("pointLight.vert", "pointLight.frag");
+	pointLightShader = new Shader("light.vert", "light.frag");
 	combineShader = new Shader("combine.vert", "combine.frag");
 
 	if(!sceneShader->LoadSuccess() || !pointLightShader->LoadSuccess() || !combineShader->LoadSuccess())
@@ -30,10 +31,13 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	SetTextureRepeating(earthTex, true);
 	SetTextureRepeating(earthBump, true);
 
-	pointLights = new Light[NUM_LIGHTS];
-	for (int i = 0; i < NUM_LIGHTS; i++) {
-		Light& l = pointLights[i];
-		l.position = Vector3(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z);
+	lights = new Light[NUM_LIGHTS];
+	lights[NUM_LIGHTS - 1].position = Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+	lights[NUM_LIGHTS - 1].colour = Vector4(0.4f, 0.4f, 0.4f, 1.0f);
+	lights[NUM_LIGHTS - 1].radius = 10000.0f;
+	for (int i = 0; i < NUM_LIGHTS - 1; i++) {
+		Light& l = lights[i];
+		l.position = Vector4(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z, 1.0f);
 		l.colour = Vector4(
 			0.5f * (float)(rand() * (1.0f / (float) RAND_MAX)),
 			0.5f * (float)(rand() * (1.0f / (float) RAND_MAX)),
@@ -88,7 +92,7 @@ Renderer::~Renderer(void) {
 	delete sphere;
 	delete quad;
 
-	delete[] pointLights;
+	delete[] lights;
 
 	delete sceneShader;
 	delete pointLightShader;
@@ -106,6 +110,10 @@ Renderer::~Renderer(void) {
 
 void Renderer::UpdateScene(float dt) {
 	camera->Update(dt);
+	static float offset = 0.0f;
+	offset += dt;
+	lights[NUM_LIGHTS - 1].position.x = std::cos(offset);
+	lights[NUM_LIGHTS - 1].position.z = std::sin(offset);
 }
 
 void Renderer::FillBuffers() {
@@ -162,11 +170,13 @@ void Renderer::DrawPointLights() {
 	glDepthFunc(GL_ALWAYS);
 	glDepthMask(GL_FALSE);
 
-	for (int i = 0; i < NUM_LIGHTS; i++) {
-		Light& l = pointLights[i];
+	for (int i = 0; i < NUM_LIGHTS - 1; i++) {
+		Light& l = lights[i];
 		SetShaderLight(&l);
 		sphere->Draw();
 	}
+	SetShaderLight(&lights[NUM_LIGHTS - 1]);
+	cube->Draw();
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);

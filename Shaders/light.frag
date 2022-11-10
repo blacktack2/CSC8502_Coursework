@@ -3,13 +3,14 @@
 uniform sampler2D depthTex;
 uniform sampler2D normTex;
 
+uniform mat4 inverseProjView;
+
 uniform vec2 pixelSize;
 uniform vec3 cameraPos;
 
 uniform float lightRadius;
-uniform vec3 lightPos;
+uniform vec4 lightPos;
 uniform vec4 lightColour;
-uniform mat4 inverseProjView;
 
 out vec4 diffuseOutput;
 out vec4 specularOutput;
@@ -21,14 +22,23 @@ void main() {
 	vec4 invClipPos = inverseProjView * vec4(ndcPos, 1.0);
 	vec3 worldPos = invClipPos.xyz / invClipPos.w;
 
-	float dist = length(lightPos - worldPos);
-	float atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
-
-	if (atten == 0)
-		discard;
+	vec3 incident;
+	float atten;
+	if (lightPos.w == 0) {
+		incident = normalize(lightPos.xyz);
+		atten = 1.0;
+		if (length(worldPos) > lightRadius / 2)
+			discard;
+	} else {
+		vec3 lPos = lightPos.xyz / lightPos.w;
+		incident = normalize(lPos - worldPos);
+		float dist = length(lPos - worldPos);
+		atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
+		if (atten == 0)
+			discard;
+	}
 
 	vec3 normal = normalize(texture(normTex, texCoord).xyz * 2.0 - 1.0);
-	vec3 incident = normalize(lightPos - worldPos);
 	vec3 viewDir = normalize(cameraPos - worldPos);
 	vec3 halfDir = normalize(incident + viewDir);
 

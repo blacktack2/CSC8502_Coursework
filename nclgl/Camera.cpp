@@ -8,7 +8,7 @@ roll(roll_), pitch(pitch_), yaw(yaw_), position(position_) {
 }
 
 void Camera::Update(float dt) {
-	float speed = (Window::GetKeyboard()->KeyDown(KEYBOARD_CONTROL) ? 60.0f : 30.0f) * dt;
+	float speed = (Window::GetKeyboard()->KeyDown(KEYBOARD_CONTROL) ? 200.0f : 30.0f) * dt;
 	float rollSpeed = 30.0f * dt;
 
 	roll += (Window::GetKeyboard()->KeyDown(KEYBOARD_Q) ? rollSpeed : 0.0f) - (Window::GetKeyboard()->KeyDown(KEYBOARD_E) ? rollSpeed : 0.0f);

@@ -23,13 +23,14 @@ protected:
 
 	HeightMap* heightMap = nullptr;
 	Mesh* sphere = nullptr;
+	Mesh* cube = nullptr;
 	Mesh* quad = nullptr;
 
 	Shader* sceneShader = nullptr;
 	Shader* pointLightShader = nullptr;
 	Shader* combineShader = nullptr;
 
-	Light* pointLights = nullptr;
+	Light* lights = nullptr;
 
 	GLuint bufferFBO = 0;
 	GLuint pointLightFBO = 0;
@@ -44,5 +45,5 @@ protected:
 	GLuint earthTex = 0;
 	GLuint earthBump = 0;
 
-	const int NUM_LIGHTS = 32;
+	const int NUM_LIGHTS = 10;
 };
