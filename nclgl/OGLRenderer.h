@@ -56,10 +56,10 @@ public:
 	void			SwapBuffers();
 
 	bool			HasInitialised() const;	
-	
+
+	static void SetTextureRepeating(GLuint target, bool repeating);
 protected:
-	void SetShaderLight(const Light* light);
-	void SetTextureRepeating(GLuint target, bool repeating);
+	void SetShaderLight(const Light* light, const Matrix4& worldTransform);
 
 	GLint UniformLocation(const GLchar* name);
 

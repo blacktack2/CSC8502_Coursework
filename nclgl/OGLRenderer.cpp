@@ -163,8 +163,9 @@ bool OGLRenderer::HasInitialised() const{
 	return init;
 }
 
-void OGLRenderer::SetShaderLight(const Light* light) {
-	glUniform4fv(UniformLocation("lightPos"), 1, (float*)&light->position);
+void OGLRenderer::SetShaderLight(const Light* light, const Matrix4& worldTransform) {
+	Vector4 position = light->position.w == 0 ? light->position : worldTransform * light->position;
+	glUniform4fv(UniformLocation("lightPos"), 1, (float*)&position);
 	glUniform4fv(UniformLocation("lightColour"), 1, (float*)&light->colour);
 	glUniform1f(UniformLocation("lightRadius"), light->radius);
 }

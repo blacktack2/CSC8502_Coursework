@@ -1,8 +1,10 @@
 #pragma once
-#include "../NCLGL/OGLRenderer.h"
+#include "../nclgl/Frustum.h"
+#include "../nclgl/OGLRenderer.h"
+
+#include <vector>
 
 class Camera;
-class HeightMap;
 class Light;
 
 class Renderer : public OGLRenderer	{
@@ -14,23 +16,33 @@ public:
 	 void UpdateScene(float msec) override;
 protected:
 	void FillBuffers();
-	void DrawPointLights();
+	void DrawLights();
 	void CombineBuffers();
+
+	void BuildNodeLists(SceneNode* from);
+	void SortNodeLists();
+	void ClearNodeLists();
+
+	void DrawNodeAlbedos();
+	void DrawNodeAlbedo(SceneNode* node);
+
+	void DrawNodeLights(SceneNode* node);
 
 	void GenerateScreenTexture(GLuint& into, bool depth = false);
 
 	Camera* camera = nullptr;
 
-	HeightMap* heightMap = nullptr;
-	Mesh* sphere = nullptr;
-	Mesh* cube = nullptr;
 	Mesh* quad = nullptr;
+
+	SceneNode* root = nullptr;
+	std::vector<SceneNode*> nodeList{};
+	std::vector<SceneNode*> nodeListTransparent{};
+
+	Frustum frameFrustum;
 
 	Shader* sceneShader = nullptr;
 	Shader* pointLightShader = nullptr;
 	Shader* combineShader = nullptr;
-
-	Light* lights = nullptr;
 
 	GLuint bufferFBO = 0;
 	GLuint pointLightFBO = 0;
@@ -41,9 +53,4 @@ protected:
 
 	GLuint lightDiffuseTex = 0;
 	GLuint lightSpecularTex = 0;
-
-	GLuint earthTex = 0;
-	GLuint earthBump = 0;
-
-	const int NUM_LIGHTS = 10;
 };

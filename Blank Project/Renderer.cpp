@@ -1,19 +1,14 @@
 #include "Renderer.h"
 
+#include "DemoSceneNode.h"
 #include "../nclgl/Camera.h"
-#include "../nclgl/HeightMap.h"
 #include "../nclgl/Light.h"
+#include "../nclgl/SceneNode.h"
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera();
 
-	heightMap = new HeightMap(TEXTUREDIR"noise.png");
-	sphere = Mesh::LoadFromMeshFile("Sphere.msh");
-	cube = Mesh::LoadFromMeshFile("Cube.msh");
-	quad = Mesh::GenerateQuad();
-	Vector3 heightMapSize = heightMap->GetSize();
-
-	camera->SetPosition(heightMapSize * Vector3(0.5f, 2.0f, 0.5f));
+	camera->SetPosition(Vector3(0.0f, 400.0f, 0.0f));
 
 	sceneShader = new Shader("buffer.vert", "buffer.frag");
 	pointLightShader = new Shader("light.vert", "light.frag");
@@ -22,30 +17,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	if(!sceneShader->LoadSuccess() || !pointLightShader->LoadSuccess() || !combineShader->LoadSuccess())
 		return;
 
-	earthTex  = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG"    , SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	earthBump = SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	quad = Mesh::GenerateQuad();
 
-	if (!earthTex || !earthBump)
-		return;
-
-	SetTextureRepeating(earthTex, true);
-	SetTextureRepeating(earthBump, true);
-
-	lights = new Light[NUM_LIGHTS];
-	lights[NUM_LIGHTS - 1].position = Vector4(1.0f, 1.0f, 1.0f, 0.0f);
-	lights[NUM_LIGHTS - 1].colour = Vector4(0.4f, 0.4f, 0.4f, 1.0f);
-	lights[NUM_LIGHTS - 1].radius = 10000.0f;
-	for (int i = 0; i < NUM_LIGHTS - 1; i++) {
-		Light& l = lights[i];
-		l.position = Vector4(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z, 1.0f);
-		l.colour = Vector4(
-			0.5f * (float)(rand() * (1.0f / (float) RAND_MAX)),
-			0.5f * (float)(rand() * (1.0f / (float) RAND_MAX)),
-			0.5f * (float)(rand() * (1.0f / (float) RAND_MAX)),
-			1.0f
-		);
-		l.radius = 250.0f + (rand() % 500);
-	}
+	root = new DemoSceneNode();
 
 	glGenFramebuffers(1, &bufferFBO);
 	glGenFramebuffers(1, &pointLightFBO);
@@ -88,11 +62,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 Renderer::~Renderer(void) {
 	delete camera;
 
-	delete heightMap;
-	delete sphere;
 	delete quad;
 
-	delete[] lights;
+	delete root;
 
 	delete sceneShader;
 	delete pointLightShader;
@@ -108,12 +80,24 @@ Renderer::~Renderer(void) {
 	glDeleteFramebuffers(1, &pointLightFBO);
 }
 
+void Renderer::RenderScene() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	BuildNodeLists(root);
+	SortNodeLists();
+
+	frameFrustum.FromMatrix(projMatrix * viewMatrix);
+
+	FillBuffers();
+	DrawLights();
+	CombineBuffers();
+
+	ClearNodeLists();
+}
+
 void Renderer::UpdateScene(float dt) {
 	camera->Update(dt);
-	static float offset = 0.0f;
-	offset += dt;
-	lights[NUM_LIGHTS - 1].position.x = std::cos(offset);
-	lights[NUM_LIGHTS - 1].position.z = std::sin(offset);
+	root->Update(dt);
 }
 
 void Renderer::FillBuffers() {
@@ -124,23 +108,17 @@ void Renderer::FillBuffers() {
 	glUniform1i(UniformLocation("diffuseTex"), 0);
 	glUniform1i(UniformLocation("bumpTex"), 1);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, earthTex);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, earthBump);
-
 	modelMatrix.ToIdentity();
 	viewMatrix = camera->BuildViewMatrix();
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 	UpdateShaderMatrices();
 
-	heightMap->Draw();
+	DrawNodeAlbedos();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::DrawPointLights() {
+void Renderer::DrawLights() {
 	glBindFramebuffer(GL_FRAMEBUFFER, pointLightFBO);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -170,13 +148,7 @@ void Renderer::DrawPointLights() {
 	glDepthFunc(GL_ALWAYS);
 	glDepthMask(GL_FALSE);
 
-	for (int i = 0; i < NUM_LIGHTS - 1; i++) {
-		Light& l = lights[i];
-		SetShaderLight(&l);
-		sphere->Draw();
-	}
-	SetShaderLight(&lights[NUM_LIGHTS - 1]);
-	cube->Draw();
+	DrawNodeLights(root);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
@@ -210,6 +182,67 @@ void Renderer::CombineBuffers() {
 	quad->Draw();
 }
 
+void Renderer::BuildNodeLists(SceneNode* from) {
+	if (frameFrustum.IsInside(*from)) {
+		Vector3 dir = from->GetWorldTransform().GetPositionVector() - camera->GetPosition();
+		from->distanceFromCamera = Vector3::Dot(dir, dir);
+		if (from->opaque)
+			nodeList.push_back(from);
+		else
+			nodeListTransparent.push_back(from);
+	}
+	for (auto child : *from)
+		BuildNodeLists(child);
+}
+
+void Renderer::SortNodeLists() {
+	std::sort(nodeList.rbegin(), nodeList.rend(), SceneNode::CompareByCameraDistance);
+	std::sort(nodeListTransparent.rbegin(), nodeListTransparent.rend(), SceneNode::CompareByCameraDistance);
+}
+
+void Renderer::ClearNodeLists() {
+	nodeList.clear();
+	nodeListTransparent.clear();
+}
+
+void Renderer::DrawNodeAlbedos() {
+	for (const auto node : nodeList) {
+		DrawNodeAlbedo(node);
+	}
+	for (const auto node : nodeListTransparent) {
+		DrawNodeAlbedo(node);
+	}
+}
+
+void Renderer::DrawNodeAlbedo(SceneNode* node) {
+	if (!node->mesh) return;
+	Matrix4 model = node->GetWorldTransform() * Matrix4::Scale(node->modelScale);
+	glUniformMatrix4fv(UniformLocation("modelMatrix"), 1, false, model.values);
+
+	if (node->diffuseTex) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, node->diffuseTex);
+	}
+
+	if (node->bumpTex) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, node->bumpTex);
+	}
+
+	node->DrawMesh(*this);
+}
+
+void Renderer::DrawNodeLights(SceneNode* node) {
+	if (node->light) {
+		Matrix4 model = node->GetWorldTransform();
+		SetShaderLight(node->light, model);
+
+		node->DrawLight(*this);
+	}
+	for (auto child : *node)
+		DrawNodeLights(child);
+}
+
 void Renderer::GenerateScreenTexture(GLuint& into, bool depth) {
 	glGenTextures(1, &into);
 	glBindTexture(GL_TEXTURE_2D, into);
@@ -224,12 +257,4 @@ void Renderer::GenerateScreenTexture(GLuint& into, bool depth) {
 	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, type, GL_UNSIGNED_BYTE, nullptr);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void Renderer::RenderScene() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-
-	FillBuffers();
-	DrawPointLights();
-	CombineBuffers();
 }

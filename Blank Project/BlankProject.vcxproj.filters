@@ -17,9 +17,15 @@
     <ClCompile Include="BlankProject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DemoSceneNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoSceneNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

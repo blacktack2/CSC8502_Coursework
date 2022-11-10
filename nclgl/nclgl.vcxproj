@@ -22,6 +22,7 @@
     <ClCompile Include="..\Third Party\glad\glad.c" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
+    <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="HeightMap.cpp" />
     <ClCompile Include="Keyboard.cpp" />
@@ -33,7 +34,9 @@
     <ClCompile Include="MeshMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="OGLRenderer.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Quaternion.cpp" />
+    <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -41,6 +44,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="ComputeShader.h" />
+    <ClInclude Include="Frustum.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="HeightMap.h" />
     <ClInclude Include="InputDevice.h" />
@@ -54,7 +58,9 @@
     <ClInclude Include="MeshMaterial.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="OGLRenderer.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="Quaternion.h" />
+    <ClInclude Include="SceneNode.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />

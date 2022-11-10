@@ -14,7 +14,7 @@ in vec3 position;
 
 void main() {
 	vec3 scale = vec3(lightRadius);
-	vec3 worldPos = (position * scale);
+	vec3 worldPos = (vec4(position * scale, 1.0f) * modelMatrix).xyz;
 	worldPos += lightPos.w == 0 ? cameraPos : lightPos.xyz;
 	gl_Position = projMatrix * viewMatrix * vec4(worldPos, 1.0);
 }
