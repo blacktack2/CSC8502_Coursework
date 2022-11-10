@@ -8,9 +8,11 @@ uniform mat4 inverseProjView;
 uniform vec2 pixelSize;
 uniform vec3 cameraPos;
 
-uniform float lightRadius;
 uniform vec4 lightPos;
+uniform float lightRadius;
 uniform vec4 lightColour;
+uniform vec3 lightDir;
+uniform float lightAngle;
 
 out vec4 diffuseOutput;
 out vec4 specularOutput;
@@ -32,6 +34,8 @@ void main() {
 	} else {
 		vec3 lPos = lightPos.xyz / lightPos.w;
 		incident = normalize(lPos - worldPos);
+		if (lightAngle < 360.0 && degrees(acos(dot(-incident, lightDir))) > lightAngle)
+			discard;
 		float dist = length(lPos - worldPos);
 		atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
 		if (atten == 0)

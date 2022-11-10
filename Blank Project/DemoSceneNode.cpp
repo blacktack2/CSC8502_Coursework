@@ -29,17 +29,12 @@ DemoSceneNode::DemoSceneNode() {
 	heightMapNode->boundingRadius = std::max(heightMapSize.x, heightMapSize.z);
 	heightMapNode->transform = Matrix4::Translation(heightMapSize * -0.5f);
 
-	SceneNode* pointLightsNode = new SceneNode();
+	pointLightsNode = new SceneNode();
 	heightMapNode->AddChild(pointLightsNode);
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 10; i++) {
 		SceneNode* lightNode = new SceneNode();
 		pointLightsNode->AddChild(lightNode);
-
-		lightNode->mesh = sphere;
-		lightNode->diffuseTex = earthTex;
-		lightNode->bumpTex = earthBump;
-
 		lightNode->light = new Light(
 			Vector4(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z, 1.0f),
 			Vector4(
@@ -49,6 +44,27 @@ DemoSceneNode::DemoSceneNode() {
 				1.0f
 			),
 			250.0f + (rand() % 500)
+		);
+		lightNode->lightMesh = sphere;
+	}
+
+	spotLightsNode = new SceneNode();
+	heightMapNode->AddChild(spotLightsNode);
+
+	for (int i = 0; i < 10; i++) {
+		SceneNode* lightNode = new SceneNode();
+		spotLightsNode->AddChild(lightNode);
+		lightNode->light = new Light(
+			Vector4(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z, 1.0f),
+			Vector4(
+				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
+				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
+				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
+				1.0f
+			),
+			1000.0f,
+			Vector3(-0.5f + (rand() * (1.0f / (float)RAND_MAX)), 1.0f, -0.5f + (rand() * (1.0f / (float)RAND_MAX))),
+			20.0f + (rand() % 80)
 		);
 		lightNode->lightMesh = sphere;
 	}
@@ -72,7 +88,7 @@ void DemoSceneNode::Update(float dt) {
 	SceneNode::Update(dt);
 
 	static float offset = 0.0f;
-	offset += dt;
+	offset += dt * 0.2;
 	dirLightNode->light->position.x = std::cos(offset);
 	dirLightNode->light->position.z = std::sin(offset);
 }

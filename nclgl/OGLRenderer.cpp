@@ -168,6 +168,8 @@ void OGLRenderer::SetShaderLight(const Light* light, const Matrix4& worldTransfo
 	glUniform4fv(UniformLocation("lightPos"), 1, (float*)&position);
 	glUniform4fv(UniformLocation("lightColour"), 1, (float*)&light->colour);
 	glUniform1f(UniformLocation("lightRadius"), light->radius);
+	glUniform3fv(UniformLocation("lightDir"), 1, (float*)&light->direction);
+	glUniform1f(UniformLocation("lightAngle"), light->angle);
 }
 
 void OGLRenderer::SetTextureRepeating(GLuint target, bool repeating) {

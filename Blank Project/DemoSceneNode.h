@@ -10,6 +10,8 @@ public:
 
 	virtual void Update(float dt);
 protected:
+	SceneNode* pointLightsNode = nullptr;
+	SceneNode* spotLightsNode = nullptr;
 	SceneNode* dirLightNode = nullptr;
 
 	HeightMap* heightMap = nullptr;
