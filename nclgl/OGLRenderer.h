@@ -59,7 +59,7 @@ public:
 
 	static void SetTextureRepeating(GLuint target, bool repeating);
 protected:
-	void SetShaderLight(const Light* light, const Matrix4& worldTransform);
+	void SetShaderLight(const Light* light);
 
 	GLint UniformLocation(const GLchar* name);
 
@@ -75,10 +75,12 @@ protected:
 		glPopDebugGroup();
 	}
 
-	Matrix4 projMatrix;		//Projection matrix
-	Matrix4 modelMatrix;	//Model matrix. NOT MODELVIEW
-	Matrix4 viewMatrix;		//View matrix
-	Matrix4 textureMatrix;	//Texture matrix
+	Matrix4 projMatrix;
+	Matrix4 shadowProjMatrix;
+	Matrix4 modelMatrix;
+	Matrix4 viewMatrix;
+	Matrix4 shadowViewMatrix;
+	Matrix4 textureMatrix;
 	Matrix4 shadowMatrix;
 
 	int		width;			//Render area width (not quite the same as window width)

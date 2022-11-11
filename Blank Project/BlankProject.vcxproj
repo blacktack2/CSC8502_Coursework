@@ -138,10 +138,12 @@
   <ItemGroup>
     <ClCompile Include="BlankProject.cpp" />
     <ClCompile Include="DemoSceneNode.cpp" />
+    <ClCompile Include="OrbiterNode.cpp" />
     <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DemoSceneNode.h" />
+    <ClInclude Include="OrbiterNode.h" />
     <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

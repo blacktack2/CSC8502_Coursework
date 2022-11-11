@@ -4,17 +4,17 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
 
-uniform vec3 cameraPos;
-
 uniform float lightRadius;
 uniform vec4 lightPos;
-uniform vec4 lightColour;
 
 in vec3 position;
 
 void main() {
-	vec3 scale = vec3(lightRadius);
-	vec3 worldPos = (vec4(position * scale, 1.0f) * modelMatrix).xyz;
-	worldPos += lightPos.w == 0 ? cameraPos : lightPos.xyz;
-	gl_Position = projMatrix * viewMatrix * vec4(worldPos, 1.0);
+	if (lightPos.w == 0) {
+		gl_Position = vec4(position, 1.0);
+	} else {
+		vec3 scale = vec3(lightRadius);
+		vec3 worldPos = (vec4(position * scale, 1.0f) * modelMatrix).xyz + lightPos.xyz;
+		gl_Position = projMatrix * viewMatrix * vec4(worldPos, 1.0);
+	}
 }

@@ -17,6 +17,7 @@ protected:
 	HeightMap* heightMap = nullptr;
 	Mesh* sphere = nullptr;
 	Mesh* cube = nullptr;
+	Mesh* quad = nullptr;
 
 	GLuint earthTex = 0;
 	GLuint earthBump = 0;

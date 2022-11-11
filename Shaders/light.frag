@@ -2,7 +2,9 @@
 
 uniform sampler2D depthTex;
 uniform sampler2D normTex;
+uniform sampler2D shadowTex;
 
+uniform mat4 shadowMatrix;
 uniform mat4 inverseProjView;
 
 uniform vec2 pixelSize;
@@ -27,10 +29,8 @@ void main() {
 	vec3 incident;
 	float atten;
 	if (lightPos.w == 0) {
-		incident = normalize(lightPos.xyz);
+		incident = normalize(lightDir);
 		atten = 1.0;
-		if (length(worldPos) > lightRadius / 2)
-			discard;
 	} else {
 		vec3 lPos = lightPos.xyz / lightPos.w;
 		incident = normalize(lPos - worldPos);
@@ -46,10 +46,24 @@ void main() {
 	vec3 viewDir = normalize(cameraPos - worldPos);
 	vec3 halfDir = normalize(incident + viewDir);
 
+	vec4 pushVal = vec4(normal, 0.0) * dot(viewDir, normal) * 100.0;
+	vec4 shadowProj = shadowMatrix * (vec4(worldPos, 1) + pushVal);
+
+	float shadow = 1.0;
+	vec3 shadowNDC = shadowProj.xyz / shadowProj.w;
+	if (abs(shadowNDC.x) < 1.0 && abs(shadowNDC.y) < 1.0 && abs(shadowNDC.z) < 1.0) {
+		vec3 biasCoord = shadowNDC * 0.5 + 0.5;
+		float shadowZ = texture(shadowTex, biasCoord.xy).x;
+		shadow = (shadowZ < biasCoord.z) ? 0.0 : 1.0;
+	}
+
 	float lambert = clamp(dot(incident, normal), 0.0, 1.0);
 	float rFactor = clamp(dot(halfDir, normal), 0.0, 1.0);
 	float specFactor = pow(rFactor, 60.0);
+
 	vec3 attenuated = lightColour.xyz * atten;
-	diffuseOutput = vec4(attenuated * lambert, 1.0);
-	specularOutput = vec4(attenuated * specFactor * 0.33, 1.0);
+
+	shadow = 1.0;
+	diffuseOutput = vec4(attenuated * lambert * shadow, 1.0);
+	specularOutput = vec4(attenuated * specFactor * 0.33 * shadow, 1.0);
 }

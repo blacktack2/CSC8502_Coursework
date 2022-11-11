@@ -1,5 +1,7 @@
 #include "DemoSceneNode.h"
 
+#include "OrbiterNode.h"
+
 #include "../nclgl/HeightMap.h"
 #include "../nclgl/Light.h"
 #include "../nclgl/LightNode.h"
@@ -19,6 +21,7 @@ DemoSceneNode::DemoSceneNode() {
 	heightMap = new HeightMap(TEXTUREDIR"noise.png");
 	sphere = Mesh::LoadFromMeshFile("Sphere.msh");
 	cube = Mesh::LoadFromMeshFile("Cube.msh");
+	quad = Mesh::GenerateQuad();
 
 	Vector3 heightMapSize = heightMap->GetSize();
 
@@ -31,58 +34,61 @@ DemoSceneNode::DemoSceneNode() {
 	heightMapNode->transform = Matrix4::Translation(heightMapSize * -0.5f);
 
 	pointLightsNode = new SceneNode();
-	heightMapNode->AddChild(pointLightsNode);
+	AddChild(pointLightsNode);
 
-	for (int i = 0; i < 10; i++) {
-		SceneNode* lightNode = new PointLightNode(
-			Vector3(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z),
-			Vector4(
-				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
-				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
-				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
-				1.0f
-			),
-			250.0f + (rand() % 500)
-		);
-		pointLightsNode->AddChild(lightNode);
-		lightNode->lightMesh = sphere;
-	}
+	SceneNode* tempLight = new PointLightNode(
+		Vector3(10.0f, 800.0f, 10.0f),
+		Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+		2500.0f
+	);
+	pointLightsNode->AddChild(tempLight);
+	//tempLight->lightMesh = sphere;
 
 	spotLightsNode = new SceneNode();
-	heightMapNode->AddChild(spotLightsNode);
+	AddChild(spotLightsNode);
 
-	for (int i = 0; i < 10; i++) {
-		SceneNode* lightNode = new SpotLightNode(
-			Vector3(rand() % (int)heightMapSize.x, 150.0f, rand() % (int)heightMapSize.z),
-			Vector4(
-				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
-				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
-				0.5f * (float)(rand() * (1.0f / (float)RAND_MAX)),
-				1.0f
-			),
-			1000.0f,
-			Vector3(-0.5f + (rand() * (1.0f / (float)RAND_MAX)), 1.0f, -0.5f + (rand() * (1.0f / (float)RAND_MAX))),
-			20.0f + (rand() % 80)
-		);
-		spotLightsNode->AddChild(lightNode);
-		lightNode->lightMesh = sphere;
-	}
+	SceneNode* lightNode = new SpotLightNode(
+		Vector3(10.0f, 800.0f, 10.0f),
+		Vector4(1.0f, 0.0f, 0.0f, 1.0f),
+		2500.0f,
+		Vector3(1.0f, -1.0f, 1.0f),
+		40.0f
+	);
+	spotLightsNode->AddChild(lightNode);
+	//lightNode->lightMesh = sphere;
 
-	dirLightNode = new DirectionLightNode(Vector3(1.0f, 1.0f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
+	dirLightNode = new DirectionLightNode(Vector3(1.0f, 0.0f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 	AddChild(dirLightNode);
-	dirLightNode->lightMesh = cube;
+	dirLightNode->lightMesh = quad;
+
+	SceneNode* orbiterNodes = new SceneNode();
+	heightMapNode->AddChild(orbiterNodes);
+	orbiterNodes->transform = Matrix4::Translation(Vector3(0.0f, 300.0f, 0.0f));
+	for (int i = 0; i < 10; i++) {
+		SceneNode* orbitPoint = new SceneNode();
+		orbiterNodes->AddChild(orbitPoint);
+		orbitPoint->transform = Matrix4::Translation(Vector3(rand() % (int)heightMapSize.x, (float)(rand() % 200), rand() % (int)heightMapSize.z));
+		OrbiterNode* orbiter = new OrbiterNode(10.0f + (rand() % 200), -10.0f + (rand() % 20));
+		orbitPoint->AddChild(orbiter);
+		orbiter->modelScale = Vector3(1.0f, 1.0f, 1.0f) * (50.0f + (rand() % 150));
+		orbiter->mesh = sphere;
+		orbiter->diffuseTex = earthTex;
+		orbiter->bumpTex = earthBump;
+	}
 }
 
 DemoSceneNode::~DemoSceneNode() {
 	delete heightMap;
 	delete sphere;
+	delete cube;
+	delete quad;
 }
 
 void DemoSceneNode::Update(float dt) {
 	SceneNode::Update(dt);
 
 	static float offset = 0.0f;
-	offset += dt * 0.2;
-	dirLightNode->light->position.x = std::cos(offset);
-	dirLightNode->light->position.z = std::sin(offset);
+	offset += dt;
+	dirLightNode->light->direction.x = std::cos(offset);
+	dirLightNode->light->direction.z = std::sin(offset);
 }

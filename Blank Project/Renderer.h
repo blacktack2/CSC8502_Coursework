@@ -28,7 +28,9 @@ protected:
 
 	void DrawNodeLights(SceneNode* node);
 
-	void GenerateScreenTexture(GLuint& into, bool depth = false);
+	void DrawNodeShadows(SceneNode* node);
+
+	void GenerateScreenTexture(GLuint& into, bool depth = false, bool shadow = false);
 
 	Camera* camera = nullptr;
 
@@ -41,16 +43,22 @@ protected:
 	Frustum frameFrustum;
 
 	Shader* sceneShader = nullptr;
-	Shader* pointLightShader = nullptr;
+	Shader* shadowShader = nullptr;
+	Shader* lightShader = nullptr;
 	Shader* combineShader = nullptr;
 
 	GLuint bufferFBO = 0;
-	GLuint pointLightFBO = 0;
+	GLuint shadowFBO = 0;
+	GLuint lightFBO = 0;
 
 	GLuint bufferColourTex = 0;
 	GLuint bufferNormalTex = 0;
 	GLuint bufferDepthTex = 0;
 
+	GLuint shadowTex = 0;
+
 	GLuint lightDiffuseTex = 0;
 	GLuint lightSpecularTex = 0;
+
+	const GLsizei SHADOWSIZE = 2048;
 };
