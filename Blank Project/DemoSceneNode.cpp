@@ -36,28 +36,28 @@ DemoSceneNode::DemoSceneNode() {
 	pointLightsNode = new SceneNode();
 	AddChild(pointLightsNode);
 
-	SceneNode* tempLight = new PointLightNode(
-		Vector3(10.0f, 800.0f, 10.0f),
+	SceneNode* pointLightNode = new PointLightNode(
+		Vector3(10.0f, 800.0f, 0.0f),
 		Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-		2500.0f
+		2000.0f
 	);
-	pointLightsNode->AddChild(tempLight);
-	//tempLight->lightMesh = sphere;
+	pointLightsNode->AddChild(pointLightNode);
+	pointLightNode->lightMesh = sphere;
 
 	spotLightsNode = new SceneNode();
 	AddChild(spotLightsNode);
 
-	SceneNode* lightNode = new SpotLightNode(
+	SceneNode* spotLightNode = new SpotLightNode(
 		Vector3(10.0f, 800.0f, 10.0f),
 		Vector4(1.0f, 0.0f, 0.0f, 1.0f),
 		2500.0f,
 		Vector3(1.0f, -1.0f, 1.0f),
 		40.0f
 	);
-	spotLightsNode->AddChild(lightNode);
-	//lightNode->lightMesh = sphere;
+	spotLightsNode->AddChild(spotLightNode);
+	spotLightNode->lightMesh = sphere;
 
-	dirLightNode = new DirectionLightNode(Vector3(1.0f, 0.0f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
+	dirLightNode = new DirectionLightNode(Vector3(0.0f, 1.0f, 0.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 	AddChild(dirLightNode);
 	dirLightNode->lightMesh = quad;
 

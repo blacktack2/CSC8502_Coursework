@@ -76,10 +76,8 @@ protected:
 	}
 
 	Matrix4 projMatrix;
-	Matrix4 shadowProjMatrix;
 	Matrix4 modelMatrix;
 	Matrix4 viewMatrix;
-	Matrix4 shadowViewMatrix;
 	Matrix4 textureMatrix;
 	Matrix4 shadowMatrix;
 

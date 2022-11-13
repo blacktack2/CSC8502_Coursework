@@ -72,6 +72,10 @@ public:
 
 	~Vector4(void){}
 
+	inline Vector3 xyz() {
+		return Vector3(x, y, z);
+	}
+
 	float x;
 	float y;
 	float z;

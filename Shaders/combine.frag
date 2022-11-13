@@ -4,6 +4,8 @@ uniform sampler2D diffuseTex;
 uniform sampler2D diffuseLight;
 uniform sampler2D specularLight;
 
+uniform vec3 ambientColour;
+
 in Vertex {
 	vec2 texCoord;
 } IN;
@@ -17,6 +19,6 @@ void main() {
 
 	fragColour.xyz = diffuse * light;
 	fragColour.xyz += spec;
-	fragColour.xyz += diffuse * 0.1;
+	fragColour.xyz += diffuse * ambientColour;
 	fragColour.w = 1.0;
 }

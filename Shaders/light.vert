@@ -11,7 +11,7 @@ in vec3 position;
 
 void main() {
 	if (lightPos.w == 0) {
-		gl_Position = vec4(position, 1.0);
+		gl_Position = vec4(position * vec3(-1.0, 1.0, 1.0), 1.0);
 	} else {
 		vec3 scale = vec3(lightRadius);
 		vec3 worldPos = (vec4(position * scale, 1.0f) * modelMatrix).xyz + lightPos.xyz;

@@ -69,7 +69,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glEnable(GL_BLEND);
 
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
-	shadowProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 170.0f);
+
+	BindShader(combineShader);
+	glUniform3f(UniformLocation("ambientColour"), 0.1f, 0.1f, 0.2f);
 
 	init = true;
 }
@@ -91,6 +93,7 @@ Renderer::~Renderer(void) {
 	glDeleteTextures(1, &lightSpecularTex);
 
 	glDeleteFramebuffers(1, &bufferFBO);
+	glDeleteFramebuffers(1, &shadowFBO);
 	glDeleteFramebuffers(1, &lightFBO);
 }
 
@@ -137,7 +140,6 @@ void Renderer::DrawLights() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	BindShader(shadowShader);
-	glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, shadowProjMatrix.values);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -246,10 +248,20 @@ void Renderer::DrawNodeAlbedo(SceneNode* node) {
 void Renderer::DrawNodeLights(SceneNode* node) {
 	if (node->light && node->lightMesh) {
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		BindShader(shadowShader);
-		Vector4 nodePos = node->GetWorldTransform() * Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-		shadowViewMatrix = Matrix4::BuildViewMatrix(Vector3(node->light->position.x, node->light->position.y, node->light->position.z), Vector3());// Vector3(nodePos.x, nodePos.y, nodePos.z));
+		Matrix4 shadowProjMatrix;
+		Matrix4 shadowViewMatrix;
+		if (node->light->position.w == 0.0f) {
+			//shadowViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * -10), Vector3());
+			shadowViewMatrix = Matrix4::BuildViewMatrix(Vector3(10.0f, 1000.0f, 10.0f), Vector3());
+			shadowProjMatrix = Matrix4::Orthographic(-1.0f, 10000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
+		} else {
+			shadowViewMatrix = Matrix4::BuildViewMatrix(node->light->position.xyz(), Vector3());
+			shadowProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 170.0f);
+		}
 		glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, shadowViewMatrix.values);
+		glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, shadowProjMatrix.values);
 
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		glViewport(0, 0, SHADOWSIZE, SHADOWSIZE);
