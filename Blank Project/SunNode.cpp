@@ -3,7 +3,7 @@
 #include "../nclgl/Light.h"
 #include "../nclgl/LightNode.h"
 
-SunNode::SunNode(OGLRenderer& renderer, Shader* combinePassShader, Mesh* quad) : SceneNode(renderer), combinePassShader(combinePassShader) {
+SunNode::SunNode(OGLRenderer& renderer, Mesh* quad) : SceneNode(renderer) {
 	sunLightNode = new DirectionLightNode(renderer, Vector3(1.0f, 1.0f, 1.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	AddChild(sunLightNode);
 	sunLightNode->lightMesh = quad;
@@ -18,7 +18,7 @@ void SunNode::Update(float dt) {
 	currentTime += dt * TIME_SCALE;
 	currentTime = currentTime > MIDN ? currentTime - MIDN : currentTime;
 
-	sunLightNode->light->direction = Vector3(std::cos(currentTime * 6.28318530718 / MIDN), std::sin(currentTime * 6.28318530718 / MIDN), 0.0f).Normalised();
+	sunLightNode->light->direction = Vector3(std::cos(currentTime * 6.28318530718 / MIDN), std::sin(currentTime * 6.28318530718 / MIDN), 0.5f).Normalised();
 
 	Vector3 currentAmbience;
 	if (currentTime < DAWN) {
@@ -35,6 +35,6 @@ void SunNode::Update(float dt) {
 		sunLightNode->light->colour = Vector4::Lerp(LIGHT_DUSK, LIGHT_MIDN, (currentTime - DUSK) / (MIDN - DUSK));
 	}
 
-	renderer.BindShader(combinePassShader);
-	glUniform3f(renderer.UniformLocation("ambientColour"), currentAmbience.x, currentAmbience.y, currentAmbience.z);
+	renderer.SetShaderUniform("light", "ambienceColour", currentAmbience.x, currentAmbience.y, currentAmbience.z);
+	renderer.SetShaderUniform("skybox", "sunDir", sunLightNode->light->direction.x, sunLightNode->light->direction.y, sunLightNode->light->direction.z);
 }

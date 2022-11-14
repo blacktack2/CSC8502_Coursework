@@ -15,8 +15,9 @@ _-_-_-_-_-_-_-""  ""
 */
 #include "Common.h"
 
-#include <string>
 #include <fstream>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "KHR\khrplatform.h"
@@ -51,21 +52,27 @@ public:
 	OGLRenderer(Window &parent);
 	virtual ~OGLRenderer(void);
 
-	virtual void	RenderScene()		= 0;
-	virtual void	UpdateScene(float msec);
-	void			SwapBuffers();
+	virtual void RenderScene() = 0;
+	virtual void UpdateScene(float msec);
+	void SwapBuffers();
 
-	bool			HasInitialised() const;	
+	bool HasInitialised() const;	
+
+	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0);
+	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1);
+	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2);
+	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2, float v3);
 
 	static void SetTextureRepeating(GLuint target, bool repeating);
-
-	void			BindShader(Shader*s);
-	GLint UniformLocation(const GLchar* name);
 protected:
+	void AddShader(std::string name, Shader* shader);
+	void BindShader(Shader*s);
+	GLint UniformLocation(const GLchar* name);
+
 	void SetShaderLight(const Light* light);
 
-	virtual void	Resize(int x, int y);	
-	void			UpdateShaderMatrices();
+	virtual void Resize(int x, int y);	
+	void UpdateShaderMatrices();
 
 	void StartDebugGroup(const std::string& s) {
 		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, (GLsizei)s.length(), s.c_str());
@@ -81,14 +88,15 @@ protected:
 	Matrix4 textureMatrix;
 	Matrix4 shadowMatrix;
 
-	int		width;			//Render area width (not quite the same as window width)
-	int		height;			//Render area height (not quite the same as window height)
-	bool	init;			//Did the renderer initialise properly?
+	int width;
+	int height;
+	bool init;
 
 private:
-	Shader* currentShader;	
-	HDC		deviceContext;	//...Device context?
-	HGLRC	renderContext;	//Permanent Rendering Context
+	Shader* currentShader;
+	std::unordered_map<std::string, Shader*> shaders;
+	HDC	deviceContext;
+	HGLRC renderContext;
 #ifdef _DEBUG
 	static void CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 #endif

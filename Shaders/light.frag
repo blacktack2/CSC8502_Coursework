@@ -16,12 +16,17 @@ uniform vec4 lightColour;
 uniform vec3 lightDir;
 uniform float lightAngle;
 
+uniform vec3 ambienceColour;
+
+out vec4 ambienceOutput;
 out vec4 diffuseOutput;
 out vec4 specularOutput;
 
 void main() {
 	vec2 texCoord = vec2(gl_FragCoord.xy * pixelSize);
 	float depth = texture(depthTex, texCoord).r;
+	if (depth == 1.0)
+		discard;
 	vec3 ndcPos = vec3(texCoord, depth) * 2.0 - 1.0;
 	vec4 invClipPos = inverseProjView * vec4(ndcPos, 1.0);
 	vec3 worldPos = invClipPos.xyz / invClipPos.w;
@@ -63,6 +68,7 @@ void main() {
 
 	vec3 attenuated = lightColour.xyz * atten;
 
+	ambienceOutput = vec4(ambienceColour, 1.0);
 	diffuseOutput = vec4(attenuated * lambert * shadow, 1.0);
 	specularOutput = vec4(attenuated * specFactor * 0.33 * shadow, 1.0);
 }

@@ -163,6 +163,26 @@ bool OGLRenderer::HasInitialised() const{
 	return init;
 }
 
+void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0) {
+	BindShader(shaders.find(shader)->second);
+	glUniform1f(UniformLocation(uniform.c_str()), v0);
+}
+
+void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1) {
+	BindShader(shaders.find(shader)->second);
+	glUniform2f(UniformLocation(uniform.c_str()), v0, v1);
+}
+
+void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2) {
+	BindShader(shaders.find(shader)->second);
+	glUniform3f(UniformLocation(uniform.c_str()), v0, v1, v2);
+}
+
+void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2, float v3) {
+	BindShader(shaders.find(shader)->second);
+	glUniform4f(UniformLocation(uniform.c_str()), v0, v1, v2, v3);
+}
+
 void OGLRenderer::SetShaderLight(const Light* light) {
 	glUniform4fv(UniformLocation("lightPos"), 1, (float*)&light->position);
 	glUniform4fv(UniformLocation("lightColour"), 1, (float*)&light->colour);
@@ -176,6 +196,10 @@ void OGLRenderer::SetTextureRepeating(GLuint target, bool repeating) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void OGLRenderer::AddShader(std::string name, Shader* shader) {
+	shaders.emplace(name, shader);
 }
 
 void OGLRenderer::BindShader(Shader*s) {

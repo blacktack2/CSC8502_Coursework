@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Shader* combineShader) : SceneNode(renderer) {
+DemoSceneNode::DemoSceneNode(OGLRenderer& renderer) : SceneNode(renderer) {
 	earthTex  = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG"    , SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	earthBump = SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 
@@ -60,7 +60,7 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Shader* combineShader) : Sce
 	spotLightsNode->AddChild(spotLightNode);
 	//spotLightNode->lightMesh = sphere;
 
-	sunNode = new SunNode(renderer, combineShader, quad);
+	sunNode = new SunNode(renderer, quad);
 	AddChild(sunNode);
 
 	SceneNode* orbiterNodes = new SceneNode(renderer);

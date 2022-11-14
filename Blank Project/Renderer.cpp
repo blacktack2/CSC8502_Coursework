@@ -10,17 +10,23 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	camera->SetPosition(Vector3(0.0f, 400.0f, 0.0f));
 
+	skyboxShader = new Shader("skybox.vert", "skybox.frag");
 	sceneShader = new Shader("buffer.vert", "buffer.frag");
 	shadowShader = new Shader("shadow.vert", "shadow.frag");
 	lightShader = new Shader("light.vert", "light.frag");
 	combineShader = new Shader("combine.vert", "combine.frag");
+	AddShader("skybox", skyboxShader);
+	AddShader("scene", sceneShader);
+	AddShader("shadow", shadowShader);
+	AddShader("light", lightShader);
+	AddShader("combine", combineShader);
 
-	if(!sceneShader->LoadSuccess() || !shadowShader->LoadSuccess() || !lightShader->LoadSuccess() || !combineShader->LoadSuccess())
+	if(!skyboxShader->LoadSuccess() || !sceneShader->LoadSuccess() || !shadowShader->LoadSuccess() || !lightShader->LoadSuccess() || !combineShader->LoadSuccess())
 		return;
 
 	quad = Mesh::GenerateQuad();
 
-	root = new DemoSceneNode(*this, combineShader);
+	root = new DemoSceneNode(*this);
 
 	glGenFramebuffers(1, &bufferFBO);
 	glGenFramebuffers(1, &shadowFBO);
@@ -28,13 +34,15 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	const GLenum buffers[3] = {
 		GL_COLOR_ATTACHMENT0,
-		GL_COLOR_ATTACHMENT1
+		GL_COLOR_ATTACHMENT1,
+		GL_COLOR_ATTACHMENT2
 	};
 
 	GenerateScreenTexture(bufferDepthTex, true);
 	GenerateScreenTexture(bufferColourTex);
 	GenerateScreenTexture(bufferNormalTex);
 	GenerateScreenTexture(shadowTex, true, true);
+	GenerateScreenTexture(lightAmbienceTex);
 	GenerateScreenTexture(lightDiffuseTex);
 	GenerateScreenTexture(lightSpecularTex);
 
@@ -55,9 +63,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 		return;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightDiffuseTex, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, lightSpecularTex, 0);
-	glDrawBuffers(2, buffers);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightAmbienceTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, lightDiffuseTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, lightSpecularTex, 0);
+	glDrawBuffers(3, buffers);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return;
@@ -73,6 +82,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	BindShader(combineShader);
 	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
 
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
 	init = true;
 }
 Renderer::~Renderer(void) {
@@ -82,13 +93,16 @@ Renderer::~Renderer(void) {
 
 	delete root;
 
+	delete skyboxShader;
 	delete sceneShader;
+	delete shadowShader;
 	delete lightShader;
 	delete combineShader;
 
 	glDeleteTextures(1, &bufferColourTex);
 	glDeleteTextures(1, &bufferNormalTex);
 	glDeleteTextures(1, &bufferDepthTex);
+	glDeleteTextures(1, &lightAmbienceTex);
 	glDeleteTextures(1, &lightDiffuseTex);
 	glDeleteTextures(1, &lightSpecularTex);
 
@@ -105,6 +119,7 @@ void Renderer::RenderScene() {
 
 	frameFrustum.FromMatrix(projMatrix * viewMatrix);
 
+	DrawSkybox();
 	FillBuffers();
 	DrawLights();
 	CombineBuffers();
@@ -117,17 +132,34 @@ void Renderer::UpdateScene(float dt) {
 	root->Update(dt);
 }
 
-void Renderer::FillBuffers() {
+void Renderer::DrawSkybox() {
 	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDepthMask(GL_FALSE);
+
+	BindShader(skyboxShader);
+
+	modelMatrix.ToIdentity();
+	viewMatrix = camera->BuildViewMatrix();
+	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	glUniformMatrix4fv(UniformLocation("modelMatrix"), 1, false, modelMatrix.values);
+	glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, viewMatrix.values);
+	glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, projMatrix.values);
+
+	quad->Draw();
+
+	glDepthMask(GL_TRUE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::FillBuffers() {
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 
 	BindShader(sceneShader);
 	glUniform1i(UniformLocation("diffuseTex"), 0);
 	glUniform1i(UniformLocation("bumpTex"), 1);
 
 	modelMatrix.ToIdentity();
-	viewMatrix = camera->BuildViewMatrix();
-	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 	UpdateShaderMatrices();
 
 	DrawNodeAlbedos();
@@ -142,9 +174,7 @@ void Renderer::DrawLights() {
 	BindShader(shadowShader);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
 	BindShader(lightShader);
 
@@ -182,16 +212,20 @@ void Renderer::CombineBuffers() {
 	UpdateShaderMatrices();
 
 	glUniform1i(UniformLocation("diffuseTex"), 0);
-	glUniform1i(UniformLocation("diffuseLight"), 1);
-	glUniform1i(UniformLocation("specularLight"), 2);
+	glUniform1i(UniformLocation("ambienceTex"), 1);
+	glUniform1i(UniformLocation("diffuseLight"), 2);
+	glUniform1i(UniformLocation("specularLight"), 3);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, bufferColourTex);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, lightDiffuseTex);
+	glBindTexture(GL_TEXTURE_2D, lightAmbienceTex);
 
 	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, lightDiffuseTex);
+
+	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, lightSpecularTex);
 
 	quad->Draw();

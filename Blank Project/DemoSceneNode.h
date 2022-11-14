@@ -5,7 +5,7 @@ class HeightMap;
 
 class DemoSceneNode : public SceneNode {
 public:
-	DemoSceneNode(OGLRenderer& renderer, Shader* combineShader);
+	DemoSceneNode(OGLRenderer& renderer);
 	~DemoSceneNode();
 
 	virtual void Update(float dt);

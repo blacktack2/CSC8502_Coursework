@@ -15,6 +15,7 @@ public:
 	 void RenderScene() override;
 	 void UpdateScene(float msec) override;
 protected:
+	void DrawSkybox();
 	void FillBuffers();
 	void DrawLights();
 	void CombineBuffers();
@@ -42,6 +43,7 @@ protected:
 
 	Frustum frameFrustum;
 
+	Shader* skyboxShader = nullptr;
 	Shader* sceneShader = nullptr;
 	Shader* shadowShader = nullptr;
 	Shader* lightShader = nullptr;
@@ -57,6 +59,7 @@ protected:
 
 	GLuint shadowTex = 0;
 
+	GLuint lightAmbienceTex = 0;
 	GLuint lightDiffuseTex = 0;
 	GLuint lightSpecularTex = 0;
 

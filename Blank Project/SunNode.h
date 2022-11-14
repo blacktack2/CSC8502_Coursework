@@ -4,12 +4,11 @@
 
 class SunNode : public SceneNode {
 public:
-	SunNode(OGLRenderer& renderer, Shader* combinePassShader, Mesh* quad);
+	SunNode(OGLRenderer& renderer, Mesh* quad);
 	~SunNode();
 
 	virtual void Update(float dt);
 protected:
-	Shader* combinePassShader = nullptr;
 	SceneNode* sunLightNode = nullptr;
 
 	float currentTime = 0.0f;
