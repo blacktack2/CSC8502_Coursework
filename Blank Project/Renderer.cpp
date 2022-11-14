@@ -20,7 +20,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	quad = Mesh::GenerateQuad();
 
-	root = new DemoSceneNode();
+	root = new DemoSceneNode(*this, combineShader);
 
 	glGenFramebuffers(1, &bufferFBO);
 	glGenFramebuffers(1, &shadowFBO);
@@ -71,7 +71,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 
 	BindShader(combineShader);
-	glUniform3f(UniformLocation("ambientColour"), 0.1f, 0.1f, 0.2f);
+	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
 
 	init = true;
 }
@@ -253,11 +253,11 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		Matrix4 shadowProjMatrix;
 		Matrix4 shadowViewMatrix;
 		if (node->light->position.w == 0.0f) {
-			//shadowViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * -10), Vector3());
-			shadowViewMatrix = Matrix4::BuildViewMatrix(Vector3(10.0f, 1000.0f, 10.0f), Vector3());
+			shadowViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * -10), Vector3());
+			//shadowViewMatrix = Matrix4::BuildViewMatrix(Vector3(10.0f, 1000.0f, 10.0f), Vector3());
 			shadowProjMatrix = Matrix4::Orthographic(-1.0f, 10000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
 		} else {
-			shadowViewMatrix = Matrix4::BuildViewMatrix(node->light->position.xyz(), Vector3());
+			shadowViewMatrix = Matrix4::BuildViewMatrix(node->light->position.ToVector3(), Vector3());
 			shadowProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 170.0f);
 		}
 		glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, shadowViewMatrix.values);

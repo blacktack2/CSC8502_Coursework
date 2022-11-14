@@ -140,11 +140,13 @@
     <ClCompile Include="DemoSceneNode.cpp" />
     <ClCompile Include="OrbiterNode.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="SunNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DemoSceneNode.h" />
     <ClInclude Include="OrbiterNode.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="SunNode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

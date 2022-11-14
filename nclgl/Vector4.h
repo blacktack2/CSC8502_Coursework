@@ -44,6 +44,18 @@ public:
 		w -= a.w;
 	}
 
+	inline Vector4  operator+(const Vector4  &a) const{
+		return Vector4(x + a.x,y + a.y, z + a.z, w + a.w);
+	}
+
+	inline Vector4  operator-(const Vector4  &a) const{
+		return Vector4(x - a.x,y - a.y, z - a.z, w - a.w);
+	}
+
+	inline Vector4  operator-() const{
+		return Vector4(-x,-y,-z,-w);
+	}
+
 	Vector4 Normalised() const {
 		Vector4 n = *this;
 		n.Normalise();
@@ -72,8 +84,8 @@ public:
 
 	~Vector4(void){}
 
-	inline Vector3 xyz() {
-		return Vector3(x, y, z);
+	static inline Vector4 Lerp(Vector4 a, Vector4 b, float t) {
+		return a + (b - a) * t;
 	}
 
 	float x;

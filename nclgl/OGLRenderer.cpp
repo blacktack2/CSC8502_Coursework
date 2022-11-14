@@ -178,6 +178,11 @@ void OGLRenderer::SetTextureRepeating(GLuint target, bool repeating) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void OGLRenderer::BindShader(Shader*s) {
+	currentShader = s;
+	glUseProgram(s->GetProgram());
+}
+
 GLint OGLRenderer::UniformLocation(const GLchar* name) {
 	return glGetUniformLocation(currentShader->GetProgram(), name);
 }
@@ -232,11 +237,6 @@ void OGLRenderer::UpdateShaderMatrices()	{
 		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix") , 1,false, textureMatrix.values);
 		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix")  , 1,false, shadowMatrix.values);
 	}
-}
-
-void OGLRenderer::BindShader(Shader*s) {
-	currentShader = s;
-	glUseProgram(s->GetProgram());
 }
 
 #ifdef OPENGL_DEBUGGING

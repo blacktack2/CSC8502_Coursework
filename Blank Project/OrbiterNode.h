@@ -3,7 +3,7 @@
 
 class OrbiterNode : public SceneNode {
 public:
-	OrbiterNode(float radius = 1.0f, float speed = 1.0f) : radius(radius), speed(speed) {};
+	OrbiterNode(OGLRenderer& renderer, float radius = 1.0f, float speed = 1.0f);
 
 	virtual void Update(float dt) override;
 protected:

@@ -58,14 +58,14 @@ public:
 	bool			HasInitialised() const;	
 
 	static void SetTextureRepeating(GLuint target, bool repeating);
+
+	void			BindShader(Shader*s);
+	GLint UniformLocation(const GLchar* name);
 protected:
 	void SetShaderLight(const Light* light);
 
-	GLint UniformLocation(const GLchar* name);
-
 	virtual void	Resize(int x, int y);	
 	void			UpdateShaderMatrices();
-	void			BindShader(Shader*s);
 
 	void StartDebugGroup(const std::string& s) {
 		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, (GLsizei)s.length(), s.c_str());

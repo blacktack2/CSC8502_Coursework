@@ -2,6 +2,9 @@
 
 #include <algorithm>
 
+SceneNode::SceneNode(OGLRenderer& renderer) : renderer(renderer) {
+}
+
 SceneNode::~SceneNode() {
 	ClearChildren();
 	delete light;

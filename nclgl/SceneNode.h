@@ -10,7 +10,7 @@
 
 class SceneNode {
 public:
-	SceneNode() = default;
+	SceneNode(OGLRenderer& renderer);
 	~SceneNode();
 
 	inline Shader* GetShader() const { return shader; }
@@ -46,6 +46,7 @@ public:
 	GLuint diffuseTex = 0;
 	GLuint bumpTex = 0;
 protected:
+	OGLRenderer& renderer;
 	SceneNode* parent = nullptr;
 
 	Shader* shader = nullptr;

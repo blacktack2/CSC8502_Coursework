@@ -122,5 +122,9 @@ public:
 
 	inline bool	operator==(const Vector3 &A)const {return (A.x == x && A.y == y && A.z == z) ? true : false;};
 	inline bool	operator!=(const Vector3 &A)const {return (A.x == x && A.y == y && A.z == z) ? false : true;};
+
+	static inline Vector3 Lerp(Vector3 a, Vector3 b, float t) {
+		return a + (b - a) * t;
+	}
 };
 

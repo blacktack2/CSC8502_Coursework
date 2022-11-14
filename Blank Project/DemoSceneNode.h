@@ -5,14 +5,14 @@ class HeightMap;
 
 class DemoSceneNode : public SceneNode {
 public:
-	DemoSceneNode();
+	DemoSceneNode(OGLRenderer& renderer, Shader* combineShader);
 	~DemoSceneNode();
 
 	virtual void Update(float dt);
 protected:
 	SceneNode* pointLightsNode = nullptr;
 	SceneNode* spotLightsNode = nullptr;
-	SceneNode* dirLightNode = nullptr;
+	SceneNode* sunNode = nullptr;
 
 	HeightMap* heightMap = nullptr;
 	Mesh* sphere = nullptr;
