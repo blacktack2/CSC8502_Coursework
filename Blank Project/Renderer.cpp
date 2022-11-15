@@ -130,6 +130,9 @@ void Renderer::RenderScene() {
 void Renderer::UpdateScene(float dt) {
 	camera->Update(dt);
 	root->Update(dt);
+
+	BindShader(skyboxShader);
+	glUniform1f(UniformLocation("time"), window.GetTimer()->GetTotalTimeSeconds());
 }
 
 void Renderer::DrawSkybox() {

@@ -49,7 +49,7 @@ class Light;
 class OGLRenderer	{
 public:
 	friend class Window;
-	OGLRenderer(Window &parent);
+	OGLRenderer(Window& parent);
 	virtual ~OGLRenderer(void);
 
 	virtual void RenderScene() = 0;
@@ -81,6 +81,8 @@ protected:
 	void EndDebugGroup() {
 		glPopDebugGroup();
 	}
+
+	Window& window;
 
 	Matrix4 projMatrix;
 	Matrix4 modelMatrix;

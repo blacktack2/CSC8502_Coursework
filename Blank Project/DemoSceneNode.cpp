@@ -44,7 +44,7 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer) : SceneNode(renderer) {
 		1000.0f
 	);
 	pointLightsNode->AddChild(pointLightNode);
-	//pointLightNode->lightMesh = sphere;
+	pointLightNode->lightMesh = sphere;
 
 	spotLightsNode = new SceneNode(renderer);
 	AddChild(spotLightsNode);
@@ -58,7 +58,7 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer) : SceneNode(renderer) {
 		40.0f
 	);
 	spotLightsNode->AddChild(spotLightNode);
-	//spotLightNode->lightMesh = sphere;
+	spotLightNode->lightMesh = sphere;
 
 	sunNode = new SunNode(renderer, quad);
 	AddChild(sunNode);
@@ -88,4 +88,8 @@ DemoSceneNode::~DemoSceneNode() {
 
 void DemoSceneNode::Update(float dt) {
 	SceneNode::Update(dt);
+	static float offset = 0.0;
+	offset += dt;
+	renderer.SetShaderUniform("skybox", "cirrus", std::sin(offset) * 0.5 + 0.5);
+	renderer.SetShaderUniform("skybox", "cumulus", std::sin(offset * 0.5) * 0.5 + 0.5);
 }
