@@ -13,7 +13,7 @@ PHeightMapNode::~PHeightMapNode() {
 }
 
 void PHeightMapNode::Generate() {
-	modelScale = Vector3(heightMapWorldSize, heightMapWorldSize, 1.0f);
+	modelScale = Vector3(heightMapWorldSize / 2.0f, heightMapWorldSize / 2.0f, 1.0f);
 	heightMap.resolutionX = heightMapWorldSize;
 	heightMap.resolutionZ = heightMapWorldSize;
 	heightMap.worldX = heightMapResolution;

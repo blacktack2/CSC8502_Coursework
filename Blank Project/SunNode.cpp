@@ -17,7 +17,6 @@ void SunNode::Update(float dt) {
 
 	currentTime += dt * TIME_SCALE;
 	currentTime = currentTime > MIDN ? currentTime - MIDN : currentTime;
-	currentTime = DUSK;
 
 	sunLightNode->light->direction = Vector3(std::cos(currentTime * 6.28318530718 / MIDN), std::sin(currentTime * 6.28318530718 / MIDN), 0.1f).Normalised();
 

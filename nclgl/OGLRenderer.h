@@ -82,10 +82,14 @@ public:
 	inline Shader* GetShader(const std::string& shader) { return shaders.find(shader)->second; };
 	GLint UniformLocation(const GLchar* name) const;
 
+	GLuint GetTexture(const std::string& texture);
+
 	static void SetTextureRepeating(GLuint target, bool repeating);
 protected:
 	void AddShader(std::string name, Shader* shader);
 	void BindShader(Shader*s);
+
+	void AddTexture(std::string name, GLuint texture);
 
 	void SetShaderLight(const Light* light);
 
@@ -108,6 +112,7 @@ protected:
 private:
 	Shader* currentShader;
 	std::unordered_map<std::string, Shader*> shaders;
+	std::unordered_map<std::string, GLuint> textures;
 
 	std::stack<Vector4> clearColourStack;
 	std::stack<Vector4> viewportStack;

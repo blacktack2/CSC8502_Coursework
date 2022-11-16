@@ -6,6 +6,18 @@
 #include "../nclgl/SceneNode.h"
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
+	AddTexture("earthTex", SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG"    , SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	AddTexture("earthBump", SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+	AddTexture("blankTex", SOIL_load_OGL_texture(TEXTUREDIR"blank.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+	if (!GetTexture("earthTex") || !GetTexture("earthBump") || !GetTexture("blankTex"))
+		return;
+
+	OGLRenderer::SetTextureRepeating(GetTexture("earthTex"), true);
+	OGLRenderer::SetTextureRepeating(GetTexture("earthBump"), true);
+	OGLRenderer::SetTextureRepeating(GetTexture("blankTex"), true);
+
 	identityMatrix.ToIdentity();
 	cameraProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 
@@ -45,7 +57,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	quad = Mesh::GenerateQuad();
 
-	root = new DemoSceneNode(*this);
+	root = new DemoSceneNode(*this, *camera);
 
 	glGenFramebuffers(1, &bufferFBO);
 	glGenFramebuffers(1, &shadowFBO);

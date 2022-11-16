@@ -139,12 +139,14 @@
     <ClCompile Include="BlankProject.cpp" />
     <ClCompile Include="DemoSceneNode.cpp" />
     <ClCompile Include="OrbiterNode.cpp" />
+    <ClCompile Include="PHeightMapMasterNode.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SunNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DemoSceneNode.h" />
     <ClInclude Include="OrbiterNode.h" />
+    <ClInclude Include="PHeightMapMasterNode.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SunNode.h" />
   </ItemGroup>

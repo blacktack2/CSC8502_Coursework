@@ -3,49 +3,29 @@
 #include "../nclgl/Light.h"
 #include "../nclgl/LightNode.h"
 #include "OrbiterNode.h"
+#include "PHeightMapMasterNode.h"
 #include "SunNode.h"
 
 #include <algorithm>
 
-DemoSceneNode::DemoSceneNode(OGLRenderer& renderer) : SceneNode(renderer) {
-	earthTex  = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG"    , SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	earthBump = SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-
-	blankTex = SOIL_load_OGL_texture(TEXTUREDIR"blank.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-
-	if (!earthTex || !earthBump)
-		return;
-
-	OGLRenderer::SetTextureRepeating(earthTex, true);
-	OGLRenderer::SetTextureRepeating(earthBump, true);
-	OGLRenderer::SetTextureRepeating(blankTex, true);
-
+DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Camera& camera) : SceneNode(renderer) {
 	float maxHeight = 100.0f;
 	int heightMapResolution = 10;
 	float heightMapWorldSize = 100.0f;
+
+	GLuint earthTex = renderer.GetTexture("earthTex");
+	GLuint earthBump = renderer.GetTexture("earthBump");
 
 	sphere = Mesh::LoadFromMeshFile("Sphere.msh");
 	cube = Mesh::LoadFromMeshFile("Cube.msh");
 	quad = Mesh::GenerateQuad();
 	heightmapQuad = Mesh::GeneratePatchQuad(heightMapWorldSize);
 
-	for (int i = -5; i < 6; i++) {
-		for (int j = -5; j < 6; j++) {
-			PHeightMapNode* heightMap = new PHeightMapNode(renderer, quad, heightmapQuad, i, j);
-			AddChild(heightMap);
-			heightMap->transform = Matrix4::Translation(Vector3(i * heightMapWorldSize * 2, 0.0f, j * heightMapWorldSize * 2)) * Matrix4::Rotation(-90, Vector3(1, 0, 0));
-			heightMap->diffuseTex = earthTex;
-			heightMap->bumpTex = earthBump;
-
-			heightMap->maxHeight = maxHeight;
-			heightMap->heightMapResolution = heightMapResolution;
-			heightMap->heightMapWorldSize = heightMapWorldSize;
-			heightMap->Generate();
-		}
-	}
+	PHeightMapMasterNode* heightMapMaster = new PHeightMapMasterNode(renderer, camera);
+	AddChild(heightMapMaster);
 
 	pointLightsNode = new SceneNode(renderer);
-	AddChild(pointLightsNode);
+	//AddChild(pointLightsNode);
 
 	SceneNode* pointLightNode = new PointLightNode(
 		renderer,
@@ -57,7 +37,7 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer) : SceneNode(renderer) {
 	pointLightNode->lightMesh = sphere;
 
 	spotLightsNode = new SceneNode(renderer);
-	AddChild(spotLightsNode);
+	//AddChild(spotLightsNode);
 
 	SceneNode* spotLightNode = new SpotLightNode(
 		renderer,
@@ -90,15 +70,10 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer) : SceneNode(renderer) {
 }
 
 DemoSceneNode::~DemoSceneNode() {
-	delete heightMap;
 	delete sphere;
 	delete cube;
 	delete quad;
 	delete heightmapQuad;
-
-	glDeleteTextures(1, &earthTex);
-	glDeleteTextures(1, &earthBump);
-	glDeleteTextures(1, &blankTex);
 }
 
 void DemoSceneNode::Update(float dt) {

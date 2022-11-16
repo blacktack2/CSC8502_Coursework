@@ -154,6 +154,8 @@ Destructor. Deletes the default shader, and the OpenGL rendering context.
 */
 OGLRenderer::~OGLRenderer(void)	{
 	wglDeleteContext(renderContext);
+	for (auto& tex : textures)
+		glDeleteTextures(1, &tex.second);
 }
 
 /*
@@ -269,8 +271,16 @@ void OGLRenderer::BindShader(Shader*s) {
 	glUseProgram(s->GetProgram());
 }
 
+void OGLRenderer::AddTexture(std::string name, GLuint texture) {
+	textures.emplace(name, texture);
+}
+
 GLint OGLRenderer::UniformLocation(const GLchar* name) const {
 	return glGetUniformLocation(currentShader->GetProgram(), name);
+}
+
+GLuint OGLRenderer::GetTexture(const std::string& texture) {
+	return textures.find(texture)->second;
 }
 
 /*
