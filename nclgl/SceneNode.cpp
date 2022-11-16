@@ -44,12 +44,44 @@ void SceneNode::Update(float dt) {
 		child->Update(dt);
 }
 
-void SceneNode::DrawMesh(const OGLRenderer& renderer) {
-	if (mesh)
+void SceneNode::DrawMesh() {
+	if (mesh) {
+		Matrix4 model = GetWorldTransform() * Matrix4::Scale(modelScale);
+		glUniformMatrix4fv(renderer.UniformLocation("modelMatrix"), 1, false, model.values);
+
+		PreDrawMesh();
+
 		mesh->Draw();
+	}
 }
 
-void SceneNode::DrawLight(const OGLRenderer& renderer) {
+void SceneNode::DrawMeshDepth() {
+	if (mesh && occluder) {
+		Matrix4 model = GetWorldTransform() * Matrix4::Scale(modelScale);
+		glUniformMatrix4fv(renderer.UniformLocation("modelMatrix"), 1, false, model.values);
+
+		PreDrawMeshDepth();
+
+		mesh->Draw();
+	}
+}
+
+void SceneNode::DrawLight() {
 	if (lightMesh)
 		lightMesh->Draw();
+}
+
+void SceneNode::PreDrawMesh() {
+	if (diffuseTex) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseTex);
+	}
+
+	if (bumpTex) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, bumpTex);
+	}
+}
+
+void SceneNode::PreDrawMeshDepth() {
 }

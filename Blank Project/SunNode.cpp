@@ -17,6 +17,7 @@ void SunNode::Update(float dt) {
 
 	currentTime += dt * TIME_SCALE;
 	currentTime = currentTime > MIDN ? currentTime - MIDN : currentTime;
+	currentTime = DUSK;
 
 	sunLightNode->light->direction = Vector3(std::cos(currentTime * 6.28318530718 / MIDN), std::sin(currentTime * 6.28318530718 / MIDN), 0.1f).Normalised();
 
@@ -35,6 +36,6 @@ void SunNode::Update(float dt) {
 		sunLightNode->light->colour = Vector4::Lerp(LIGHT_DUSK, LIGHT_MIDN, (currentTime - DUSK) / (MIDN - DUSK));
 	}
 
-	renderer.SetShaderUniform("light", "ambienceColour", currentAmbience.x, currentAmbience.y, currentAmbience.z);
-	renderer.SetShaderUniform("skybox", "sunDir", sunLightNode->light->direction.x, sunLightNode->light->direction.y, sunLightNode->light->direction.z);
+	renderer.SetShaderUniformf("light", "ambienceColour", currentAmbience.x, currentAmbience.y, currentAmbience.z);
+	renderer.SetShaderUniformf("skybox", "sunDir", sunLightNode->light->direction.x, sunLightNode->light->direction.y, sunLightNode->light->direction.z);
 }

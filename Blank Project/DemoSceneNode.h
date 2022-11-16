@@ -1,7 +1,7 @@
 #pragma once
-#include "..\nclgl\SceneNode.h"
-
-class HeightMap;
+#include "../nclgl/HeightMap.h"
+#include "../nclgl/PHeightMapNode.h"
+#include "../nclgl/SceneNode.h"
 
 class DemoSceneNode : public SceneNode {
 public:
@@ -14,12 +14,15 @@ protected:
 	SceneNode* spotLightsNode = nullptr;
 	SceneNode* sunNode = nullptr;
 
-	HeightMap* heightMap = nullptr;
+	PHeightMapNode* heightMap = nullptr;
 	Mesh* sphere = nullptr;
 	Mesh* cube = nullptr;
 	Mesh* quad = nullptr;
+	Mesh* heightmapQuad = nullptr;
 
 	GLuint earthTex = 0;
 	GLuint earthBump = 0;
+
+	GLuint blankTex = 0;
 };
 

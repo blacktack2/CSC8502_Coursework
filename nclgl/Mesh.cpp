@@ -3,7 +3,7 @@
 
 using std::string;
 
-Mesh::Mesh(void)	{
+Mesh::Mesh(void) {
 	glGenVertexArrays(1, &arrayObject);
 	
 	for(int i = 0; i < MAX_BUFFER; ++i) {
@@ -24,26 +24,25 @@ Mesh::Mesh(void)	{
 	weightIndices	= nullptr;
 }
 
-Mesh::~Mesh(void)	{
+Mesh::~Mesh(void) {
 	glDeleteVertexArrays(1, &arrayObject);			//Delete our VAO
 	glDeleteBuffers(MAX_BUFFER, bufferObject);		//Delete our VBOs
 
-	delete[]	vertices;
-	delete[]	indices;
-	delete[]	textureCoords;
-	delete[]	tangents;
-	delete[]	normals;
-	delete[]	colours;
-	delete[]	weights;
-	delete[]	weightIndices;
+	delete[] vertices;
+	delete[] indices;
+	delete[] textureCoords;
+	delete[] tangents;
+	delete[] normals;
+	delete[] colours;
+	delete[] weights;
+	delete[] weightIndices;
 }
 
-void Mesh::Draw()	{
+void Mesh::Draw() {
 	glBindVertexArray(arrayObject);
 	if(bufferObject[INDEX_BUFFER]) {
 		glDrawElements(type, numIndices, GL_UNSIGNED_INT, 0);
-	}
-	else{
+	} else {
 		glDrawArrays(type, 0, numVertices);
 	}
 	glBindVertexArray(0);	
@@ -77,7 +76,7 @@ void UploadAttribute(GLuint* id, int numElements, int dataSize, int attribSize, 
 	glObjectLabel(GL_BUFFER, *id, -1, debugName.c_str());
 }
 
-void	Mesh::BufferData()	{
+void Mesh::BufferData()	{
 	glBindVertexArray(arrayObject);
 
 	////Buffer vertex data
@@ -486,6 +485,33 @@ Mesh* Mesh::GenerateQuad() {
 	m->textureCoords[2] = Vector2(0.0f, 1.0f);
 	m->textureCoords[3] = Vector2(1.0f, 1.0f);
 
+	m->vertices = new Vector3[m->numVertices];
+	m->colours = new Vector4[m->numVertices];
+	m->normals = new Vector3[m->numVertices];
+	m->tangents = new Vector4[m->numVertices];
+	for (int i = 0; i < m->numVertices; i++) {
+		Vector2 tex = m->textureCoords[i];
+		m->vertices[i] = Vector3((tex.x == 0) ? -1.0f : 1.0f, (tex.y == 0) ? -1.0f : 1.0f, 0.0f);
+		m->colours[i]  = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		m->normals[i]  = Vector3(0.0f, 0.0f, -1.0f);
+		m->tangents[i] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	m->BufferData();
+	return m;
+}
+
+Mesh* Mesh::GeneratePatchQuad(float texelSize) {
+	Mesh* m = new Mesh();
+	m->numVertices = 4;
+	m->type = GL_PATCHES;
+
+	m->textureCoords = new Vector2[m->numVertices];
+	m->textureCoords[0] = Vector2(0.0f     , 0.0f);
+	m->textureCoords[1] = Vector2(texelSize, 0.0f);
+	m->textureCoords[2] = Vector2(0.0f     , texelSize);
+	m->textureCoords[3] = Vector2(texelSize, texelSize);
+	
 	m->vertices = new Vector3[m->numVertices];
 	m->colours = new Vector4[m->numVertices];
 	m->normals = new Vector3[m->numVertices];

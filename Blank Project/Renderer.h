@@ -48,6 +48,13 @@ protected:
 	Shader* shadowShader = nullptr;
 	Shader* lightShader = nullptr;
 	Shader* combineShader = nullptr;
+	Shader* heightmapShader = nullptr;
+
+	Shader* noiseShader = nullptr;
+
+	Matrix4 cameraViewMatrix;
+	Matrix4 cameraProjMatrix;
+	Matrix4 identityMatrix;
 
 	GLuint bufferFBO = 0;
 	GLuint shadowFBO = 0;

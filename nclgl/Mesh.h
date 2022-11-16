@@ -88,6 +88,7 @@ public:
 
 	static Mesh* GenerateTriangle();
 	static Mesh* GenerateQuad();
+	static Mesh* GeneratePatchQuad(float texelSize = 1.0f);
 protected:
 	void GenerateTangents();
 	Vector4 GenerateTangent(int a, int b, int c);

@@ -6,22 +6,41 @@
 #include "../nclgl/SceneNode.h"
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
+	identityMatrix.ToIdentity();
+	cameraProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+
 	camera = new Camera();
 
 	camera->SetPosition(Vector3(0.0f, 400.0f, 0.0f));
 
 	skyboxShader = new Shader("skybox.vert", "skybox.frag");
+
 	sceneShader = new Shader("buffer.vert", "buffer.frag");
+	heightmapShader = new Shader("heightmap.vert", "heightmap.frag", "", "heightmap.tesc", "heightmap.tese");
+
 	shadowShader = new Shader("shadow.vert", "shadow.frag");
 	lightShader = new Shader("light.vert", "light.frag");
+
 	combineShader = new Shader("combine.vert", "combine.frag");
+
+	noiseShader = new Shader("noise.vert", "noise.frag");
+
 	AddShader("skybox", skyboxShader);
 	AddShader("scene", sceneShader);
 	AddShader("shadow", shadowShader);
 	AddShader("light", lightShader);
 	AddShader("combine", combineShader);
+	AddShader("heightmap", heightmapShader);
 
-	if(!skyboxShader->LoadSuccess() || !sceneShader->LoadSuccess() || !shadowShader->LoadSuccess() || !lightShader->LoadSuccess() || !combineShader->LoadSuccess())
+	AddShader("noise", noiseShader);
+
+	if(!skyboxShader->LoadSuccess() ||
+		!sceneShader->LoadSuccess() ||
+		!heightmapShader->LoadSuccess() ||
+		!shadowShader->LoadSuccess() ||
+		!lightShader->LoadSuccess() ||
+		!combineShader->LoadSuccess() ||
+		!noiseShader->LoadSuccess())
 		return;
 
 	quad = Mesh::GenerateQuad();
@@ -77,12 +96,37 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 
-	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	glPatchParameteri(GL_PATCH_VERTICES, 4);
+
+	BindShader(skyboxShader);
+	
+	glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, cameraProjMatrix.values);
+
+	BindShader(sceneShader);
+	glUniform1i(UniformLocation("diffuseTex"), 0);
+	glUniform1i(UniformLocation("bumpTex"), 1);
+	glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, cameraProjMatrix.values);
+
+	BindShader(heightmapShader);
+	glUniform1i(UniformLocation("diffuseTex"), 0);
+	glUniform1i(UniformLocation("bumpTex"), 1);
+	glUniform1i(UniformLocation("heightTex"), 2);
+	glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, cameraProjMatrix.values);
+
+	BindShader(lightShader);
+
+	glUniform1i(UniformLocation("depthTex"), 0);
+	glUniform1i(UniformLocation("normTex"), 1);
+	glUniform1i(UniformLocation("shadowTex"), 2);
 
 	BindShader(combineShader);
-	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glUniform1i(UniformLocation("diffuseTex"), 0);
+	glUniform1i(UniformLocation("ambienceTex"), 1);
+	glUniform1i(UniformLocation("diffuseLight"), 2);
+	glUniform1i(UniformLocation("specularLight"), 3);
+
+	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
 
 	init = true;
 }
@@ -98,6 +142,9 @@ Renderer::~Renderer(void) {
 	delete shadowShader;
 	delete lightShader;
 	delete combineShader;
+	delete heightmapShader;
+
+	delete noiseShader;
 
 	glDeleteTextures(1, &bufferColourTex);
 	glDeleteTextures(1, &bufferNormalTex);
@@ -117,7 +164,7 @@ void Renderer::RenderScene() {
 	BuildNodeLists(root);
 	SortNodeLists();
 
-	frameFrustum.FromMatrix(projMatrix * viewMatrix);
+	frameFrustum.FromMatrix(cameraProjMatrix * cameraViewMatrix);
 
 	DrawSkybox();
 	FillBuffers();
@@ -129,6 +176,7 @@ void Renderer::RenderScene() {
 
 void Renderer::UpdateScene(float dt) {
 	camera->Update(dt);
+	cameraViewMatrix = camera->BuildViewMatrix();
 	root->Update(dt);
 
 	BindShader(skyboxShader);
@@ -142,12 +190,7 @@ void Renderer::DrawSkybox() {
 
 	BindShader(skyboxShader);
 
-	modelMatrix.ToIdentity();
-	viewMatrix = camera->BuildViewMatrix();
-	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
-	glUniformMatrix4fv(UniformLocation("modelMatrix"), 1, false, modelMatrix.values);
-	glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, viewMatrix.values);
-	glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, projMatrix.values);
+	glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, cameraViewMatrix.values);
 
 	quad->Draw();
 
@@ -157,13 +200,6 @@ void Renderer::DrawSkybox() {
 
 void Renderer::FillBuffers() {
 	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
-
-	BindShader(sceneShader);
-	glUniform1i(UniformLocation("diffuseTex"), 0);
-	glUniform1i(UniformLocation("bumpTex"), 1);
-
-	modelMatrix.ToIdentity();
-	UpdateShaderMatrices();
 
 	DrawNodeAlbedos();
 
@@ -181,10 +217,6 @@ void Renderer::DrawLights() {
 
 	BindShader(lightShader);
 
-	glUniform1i(UniformLocation("depthTex"), 0);
-	glUniform1i(UniformLocation("normTex"), 1);
-	glUniform1i(UniformLocation("shadowTex"), 2);
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
 
@@ -197,9 +229,8 @@ void Renderer::DrawLights() {
 	glUniform3fv(UniformLocation("cameraPos"), 1, (float*)&camera->GetPosition());
 	glUniform2f(UniformLocation("pixelSize"), 1.0f / width, 1.0f / height);
 
-	Matrix4 invViewProj = (projMatrix * viewMatrix).Inverse();
+	Matrix4 invViewProj = (cameraProjMatrix * cameraViewMatrix).Inverse();
 	glUniformMatrix4fv(UniformLocation("inverseProjView"), 1, false, invViewProj.values);
-	UpdateShaderMatrices();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -208,16 +239,6 @@ void Renderer::DrawLights() {
 
 void Renderer::CombineBuffers() {
 	BindShader(combineShader);
-
-	modelMatrix.ToIdentity();
-	viewMatrix.ToIdentity();
-	projMatrix.ToIdentity();
-	UpdateShaderMatrices();
-
-	glUniform1i(UniformLocation("diffuseTex"), 0);
-	glUniform1i(UniformLocation("ambienceTex"), 1);
-	glUniform1i(UniformLocation("diffuseLight"), 2);
-	glUniform1i(UniformLocation("specularLight"), 3);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, bufferColourTex);
@@ -265,21 +286,12 @@ void Renderer::DrawNodeAlbedos() {
 }
 
 void Renderer::DrawNodeAlbedo(SceneNode* node) {
-	if (!node->mesh) return;
-	Matrix4 model = node->GetWorldTransform() * Matrix4::Scale(node->modelScale);
-	glUniformMatrix4fv(UniformLocation("modelMatrix"), 1, false, model.values);
-
-	if (node->diffuseTex) {
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, node->diffuseTex);
-	}
-
-	if (node->bumpTex) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, node->bumpTex);
-	}
-
-	node->DrawMesh(*this);
+	if (!node->GetShader())
+		BindShader(sceneShader);
+	else
+		BindShader(node->GetShader());
+	glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, cameraViewMatrix.values);
+	node->DrawMesh();
 }
 
 void Renderer::DrawNodeLights(SceneNode* node) {
@@ -291,7 +303,6 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		Matrix4 shadowViewMatrix;
 		if (node->light->position.w == 0.0f) {
 			shadowViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * -10), Vector3());
-			//shadowViewMatrix = Matrix4::BuildViewMatrix(Vector3(10.0f, 1000.0f, 10.0f), Vector3());
 			shadowProjMatrix = Matrix4::Orthographic(-1.0f, 10000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
 		} else {
 			shadowViewMatrix = Matrix4::BuildViewMatrix(node->light->position.ToVector3(), Vector3());
@@ -301,18 +312,17 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, shadowProjMatrix.values);
 
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		glViewport(0, 0, SHADOWSIZE, SHADOWSIZE);
+		PushViewport(Vector4(0, 0, SHADOWSIZE, SHADOWSIZE));
 
 		DrawNodeShadows(root);
 
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glViewport(0, 0, width, height);
+		PopViewport();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
 		BindShader(lightShader);
-		UpdateShaderMatrices();
 		SetShaderLight(node->light);
-		shadowMatrix = shadowProjMatrix * shadowViewMatrix;
+		Matrix4 shadowMatrix = shadowProjMatrix * shadowViewMatrix;
 		glUniformMatrix4fv(UniformLocation("shadowMatrix"), 1, false, shadowMatrix.values);
 
 		glBlendFunc(GL_ONE, GL_ONE);
@@ -320,7 +330,7 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		glDepthFunc(GL_ALWAYS);
 		glDepthMask(GL_FALSE);
 
-		node->DrawLight(*this);
+		node->DrawLight();
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glCullFace(GL_BACK);
@@ -334,12 +344,7 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 }
 
 void Renderer::DrawNodeShadows(SceneNode* node) {
-	if (node->mesh) {
-		Matrix4 model = node->GetWorldTransform() * Matrix4::Scale(node->modelScale);
-		glUniformMatrix4fv(UniformLocation("modelMatrix"), 1, false, model.values);
-
-		node->DrawMesh(*this);
-	}
+	node->DrawMeshDepth();
 	for (auto child : *node)
 		DrawNodeShadows(child);
 }

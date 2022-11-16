@@ -134,34 +134,35 @@ in Vertex {
 	vec3 viewDir;
 } IN;
 
-out vec4 fragColour;
+out vec4 fragColour[2];
 
 // Adapted from https://github.com/shff/opengl_sky
 void main() {
-	vec3 viewDir = IN.viewDir;
-	viewDir.y = abs(viewDir.y);
-	float mu = dot(normalize(viewDir), normalize(sunDir));
+	vec3 view = IN.viewDir;
+	vec3 sun = -sunDir;
+	view.y = abs(view.y);
+	float mu = dot(normalize(view), -normalize(sun));
 	float rayleigh = 3.0 / (8.0 * 3.1415926535) * (1.0 + mu * mu);
 	vec3 mie = (Kr + Km * (1.0 - g * g) / (2.0 + g * g) / pow(1.0 + g * g - 2.0 * g * mu, 1.5)) / (Br + Bm);
 	
 	vec3 day_extinction =
-		exp(-exp(-((viewDir.y + sunDir.y * 4.0) * (exp(-viewDir.y * 16.0) * 0.1) / 80.0) / Br) * (exp(-viewDir.y * 16.0) + 0.1) * Kr / Br) *
-		exp(-viewDir.y * exp(-viewDir.y * 8.0) * 4.0) *
-		exp(-viewDir.y * 2.0) * 4.0;
-	vec3 night_extinction = vec3(1.0 - exp(sunDir.y)) * 0.2;
-	vec3 extinction = mix(day_extinction, night_extinction, -sunDir.y * 0.2 + 0.5);
+		exp(-exp(-((view.y + sun.y * 4.0) * (exp(-view.y * 16.0) * 0.1) / 80.0) / Br) * (exp(-view.y * 16.0) + 0.1) * Kr / Br) *
+		exp(-view.y * exp(-view.y * 8.0) * 4.0) *
+		exp(-view.y * 2.0) * 4.0;
+	vec3 night_extinction = vec3(1.0 - exp(sun.y)) * 0.2;
+	vec3 extinction = mix(day_extinction, night_extinction, -sun.y * 0.2 + 0.5);
 
-	fragColour = vec4(rayleigh * mie * extinction, 1.0);
+	fragColour[0] = vec4(rayleigh * mie * extinction, 1.0);
 	
 	if (IN.viewDir.y > 0.0) {
-		float cirrusDensity = smoothstep(1.0 - cirrus, 1.0, fBm(viewDir / viewDir.y * 2.0 + time * 0.05)) * 0.3;
-		fragColour.rgb = mix(fragColour.rgb, extinction * 4.0, cirrusDensity * viewDir.y);
+		float cirrusDensity = smoothstep(1.0 - cirrus, 1.0, fBm(view / view.y * 2.0 + time * 0.05)) * 0.3;
+		fragColour[0].rgb = mix(fragColour[0].rgb, extinction * 4.0, cirrusDensity * view.y);
 
 		for (int i = 0; i < 10; i++) {
-			float cumulusDensity = smoothstep(1.0 - cumulus, 1.0, fBm((0.7 + float(i) * 0.01) * viewDir / viewDir.y + time * 0.3));
-			fragColour.rgb = mix(fragColour.rgb, extinction * cumulusDensity * 5.0, min(cumulusDensity, 1.0) * viewDir.y);
+			float cumulusDensity = smoothstep(1.0 - cumulus, 1.0, fBm((0.7 + float(i) * 0.01) * view / view.y + time * 0.3));
+			fragColour[0].rgb = mix(fragColour[0].rgb, extinction * cumulusDensity * 5.0, min(cumulusDensity, 1.0) * view.y);
 		}
 	}
 
-	fragColour.rgb += simplex(viewDir * 1000) * 0.01;
+	fragColour[0].rgb += simplex(view * 1000) * 0.01;
 }

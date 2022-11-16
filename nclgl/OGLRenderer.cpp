@@ -38,6 +38,7 @@ way to do it - but it kept the Tutorial code down to a minimum!
 */
 OGLRenderer::OGLRenderer(Window &window) : window(window) {
 	init					= false;
+	clearColourStack.emplace(0.0f, 0.0f, 0.0f, 0.0f);
 	HWND windowHandle = window.GetHandle();
 
 	// Did We Get A Device Context?
@@ -163,24 +164,85 @@ bool OGLRenderer::HasInitialised() const{
 	return init;
 }
 
-void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0) {
+void OGLRenderer::PushClearColour(Vector4 colour) {
+	glClearColor(colour.x, colour.y, colour.z, colour.w);
+	clearColourStack.push(colour);
+}
+
+void OGLRenderer::PopClearColour() {
+	clearColourStack.pop();
+	Vector4 colour = clearColourStack.top();
+	glClearColor(colour.x, colour.y, colour.z, colour.w);
+}
+
+void OGLRenderer::PushViewport(Vector4 viewport) {
+	glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+	viewportStack.push(viewport);
+}
+
+void OGLRenderer::PopViewport() {
+	viewportStack.pop();
+	if (viewportStack.empty()) {
+		glViewport(0, 0, width, height);
+	} else {
+		Vector4 viewport = viewportStack.top();
+		glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+	}
+}
+
+void OGLRenderer::SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0) {
 	BindShader(shaders.find(shader)->second);
 	glUniform1f(UniformLocation(uniform.c_str()), v0);
 }
 
-void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1) {
+void OGLRenderer::SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0, float v1) {
 	BindShader(shaders.find(shader)->second);
 	glUniform2f(UniformLocation(uniform.c_str()), v0, v1);
 }
 
-void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2) {
+void OGLRenderer::SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0, float v1, float v2) {
 	BindShader(shaders.find(shader)->second);
 	glUniform3f(UniformLocation(uniform.c_str()), v0, v1, v2);
 }
 
-void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2, float v3) {
+void OGLRenderer::SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0, float v1, float v2, float v3) {
 	BindShader(shaders.find(shader)->second);
 	glUniform4f(UniformLocation(uniform.c_str()), v0, v1, v2, v3);
+}
+
+void OGLRenderer::SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0) {
+	BindShader(shaders.find(shader)->second);
+	glUniform1i(UniformLocation(uniform.c_str()), v0);
+}
+
+void OGLRenderer::SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0, int v1) {
+	BindShader(shaders.find(shader)->second);
+	glUniform2i(UniformLocation(uniform.c_str()), v0, v1);
+}
+
+void OGLRenderer::SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0, int v1, int v2) {
+	BindShader(shaders.find(shader)->second);
+	glUniform3i(UniformLocation(uniform.c_str()), v0, v1, v2);
+}
+
+void OGLRenderer::SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0, int v1, int v2, int v3) {
+	BindShader(shaders.find(shader)->second);
+	glUniform4i(UniformLocation(uniform.c_str()), v0, v1, v2, v3);
+}
+
+void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, Matrix2 m) {
+	BindShader(shaders.find(shader)->second);
+	glUniformMatrix2fv(UniformLocation(uniform.c_str()), 1, false, m.values);
+}
+
+void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, Matrix3 m) {
+	BindShader(shaders.find(shader)->second);
+	glUniformMatrix3fv(UniformLocation(uniform.c_str()), 1, false, m.values);
+}
+
+void OGLRenderer::SetShaderUniform(const std::string& shader, const std::string& uniform, Matrix4 m) {
+	BindShader(shaders.find(shader)->second);
+	glUniformMatrix4fv(UniformLocation(uniform.c_str()), 1, false, m.values);
 }
 
 void OGLRenderer::SetShaderLight(const Light* light) {
@@ -207,7 +269,7 @@ void OGLRenderer::BindShader(Shader*s) {
 	glUseProgram(s->GetProgram());
 }
 
-GLint OGLRenderer::UniformLocation(const GLchar* name) {
+GLint OGLRenderer::UniformLocation(const GLchar* name) const {
 	return glGetUniformLocation(currentShader->GetProgram(), name);
 }
 
@@ -244,23 +306,6 @@ shouldn't be in here...(I'm lazy)
 */
 void OGLRenderer::UpdateScene(float msec)	{
 
-}
-
-/*
-Updates the uniform matrices of the current shader. Assumes that
-the shader has uniform matrices called modelMatrix, viewMatrix,
-projMatrix, and textureMatrix. Updates them with the relevant
-matrix data. Sanity checks currentShader, so is always safe to
-call.
-*/
-void OGLRenderer::UpdateShaderMatrices()	{
-	if(currentShader) {
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix")   ,	1,false, modelMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "viewMatrix")    ,	1,false, viewMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "projMatrix")    ,	1,false, projMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix") , 1,false, textureMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix")  , 1,false, shadowMatrix.values);
-	}
 }
 
 #ifdef OPENGL_DEBUGGING

@@ -26,8 +26,9 @@ public:
 	inline std::vector<SceneNode*>::const_iterator end() const { return children.end(); }
 
 	virtual void Update(float dt);
-	virtual void DrawMesh(const OGLRenderer& renderer);
-	virtual void DrawLight(const OGLRenderer& renderer);
+	void DrawMesh();
+	void DrawMeshDepth();
+	virtual void DrawLight();
 
 	inline static bool CompareByCameraDistance(SceneNode* a, SceneNode* b) { return a->distanceFromCamera < b->distanceFromCamera; }
 
@@ -42,10 +43,13 @@ public:
 	float boundingRadius = 0.0f;
 
 	bool opaque = true;
+	bool occluder = true;
 
 	GLuint diffuseTex = 0;
 	GLuint bumpTex = 0;
 protected:
+	virtual void PreDrawMesh();
+	virtual void PreDrawMeshDepth();
 	OGLRenderer& renderer;
 	SceneNode* parent = nullptr;
 

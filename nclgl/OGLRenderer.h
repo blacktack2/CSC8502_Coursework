@@ -16,6 +16,7 @@ _-_-_-_-_-_-_-""  ""
 #include "Common.h"
 
 #include <fstream>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -32,6 +33,8 @@ _-_-_-_-_-_-_-""  ""
 #include "Vector3.h"
 #include "Vector2.h"
 #include "Quaternion.h"
+#include "Matrix2.h"
+#include "Matrix3.h"
 #include "Matrix4.h"
 #include "Window.h"
 #include "Shader.h"
@@ -56,23 +59,37 @@ public:
 	virtual void UpdateScene(float msec);
 	void SwapBuffers();
 
-	bool HasInitialised() const;	
+	bool HasInitialised() const;
 
-	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0);
-	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1);
-	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2);
-	void SetShaderUniform(const std::string& shader, const std::string& uniform, float v0, float v1, float v2, float v3);
+	void PushClearColour(Vector4 colour);
+	void PopClearColour();
+
+	void PushViewport(Vector4 viewport);
+	void PopViewport();
+
+	void SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0);
+	void SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0, float v1);
+	void SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0, float v1, float v2);
+	void SetShaderUniformf(const std::string& shader, const std::string& uniform, float v0, float v1, float v2, float v3);
+	void SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0);
+	void SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0, int v1);
+	void SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0, int v1, int v2);
+	void SetShaderUniformi(const std::string& shader, const std::string& uniform, int v0, int v1, int v2, int v3);
+	void SetShaderUniform(const std::string& shader, const std::string& uniform, Matrix2 m);
+	void SetShaderUniform(const std::string& shader, const std::string& uniform, Matrix3 m);
+	void SetShaderUniform(const std::string& shader, const std::string& uniform, Matrix4 m);
+
+	inline Shader* GetShader(const std::string& shader) { return shaders.find(shader)->second; };
+	GLint UniformLocation(const GLchar* name) const;
 
 	static void SetTextureRepeating(GLuint target, bool repeating);
 protected:
 	void AddShader(std::string name, Shader* shader);
 	void BindShader(Shader*s);
-	GLint UniformLocation(const GLchar* name);
 
 	void SetShaderLight(const Light* light);
 
-	virtual void Resize(int x, int y);	
-	void UpdateShaderMatrices();
+	virtual void Resize(int x, int y);
 
 	void StartDebugGroup(const std::string& s) {
 		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, (GLsizei)s.length(), s.c_str());
@@ -84,12 +101,6 @@ protected:
 
 	Window& window;
 
-	Matrix4 projMatrix;
-	Matrix4 modelMatrix;
-	Matrix4 viewMatrix;
-	Matrix4 textureMatrix;
-	Matrix4 shadowMatrix;
-
 	int width;
 	int height;
 	bool init;
@@ -97,6 +108,10 @@ protected:
 private:
 	Shader* currentShader;
 	std::unordered_map<std::string, Shader*> shaders;
+
+	std::stack<Vector4> clearColourStack;
+	std::stack<Vector4> viewportStack;
+
 	HDC	deviceContext;
 	HGLRC renderContext;
 #ifdef _DEBUG

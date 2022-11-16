@@ -38,6 +38,8 @@
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="LightNode.cpp" />
+    <ClCompile Include="ProceduralHeightMap.cpp" />
+    <ClCompile Include="PHeightMapNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
@@ -88,6 +90,8 @@
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="LightNode.h" />
+    <ClInclude Include="ProceduralHeightMap.h" />
+    <ClInclude Include="PHeightMapNode.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GLAD">
