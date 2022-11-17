@@ -265,6 +265,10 @@ void OGLRenderer::SetTextureRepeating(GLuint target, bool repeating) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void OGLRenderer::SetPostProcess(bool pp) {
+	postProcess = pp;
+}
+
 void OGLRenderer::AddShader(std::string name, Shader* shader) {
 	shaders.emplace(name, shader);
 }

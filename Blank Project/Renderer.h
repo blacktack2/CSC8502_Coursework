@@ -14,6 +14,8 @@ public:
 
 	 void RenderScene() override;
 	 void UpdateScene(float msec) override;
+
+	 virtual void SetPostProcess(bool pp) override;
 protected:
 	void DrawSkybox();
 	void FillBuffers();
@@ -84,6 +86,7 @@ protected:
 
 	GLuint sceneTex1 = 0;
 	GLuint sceneTex2 = 0;
+	GLuint sceneTexOut = 0;
 
 	const GLsizei SHADOWSIZE = 2048;
 };

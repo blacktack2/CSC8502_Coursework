@@ -85,6 +85,9 @@ public:
 	GLuint GetTexture(const std::string& texture);
 
 	static void SetTextureRepeating(GLuint target, bool repeating);
+
+	virtual void SetPostProcess(bool pp);
+	inline bool IsPostProcessing() { return postProcess; }
 protected:
 	void AddShader(std::string name, Shader* shader);
 	void BindShader(Shader*s);
@@ -102,6 +105,8 @@ protected:
 	void EndDebugGroup() {
 		glPopDebugGroup();
 	}
+
+	bool postProcess = true;
 
 	Window& window;
 

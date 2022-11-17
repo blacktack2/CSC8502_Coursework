@@ -2,6 +2,8 @@
 uniform sampler2D sceneTex;
 uniform sampler2D depthTex;
 
+uniform mat4 inverseProjView;
+
 uniform float fogMin;
 uniform float fogMax;
 uniform vec3 fogColour;
@@ -20,12 +22,12 @@ void main() {
 	if (depth == 1) {
 		fragColour = vec4(scene, 1.0);
 	} else {
+		//vec3 ndcPos = vec3(IN.texCoord, depth) * 2.0 - 1.0;
+		//vec4 invClipPos = inverseProjView * vec4(ndcPos, 1.0);
+		//vec3 worldPos = invClipPos.xyz / invClipPos.w;
+
 		float depthScale = fogMax - fogMin;
-		if (depth > fogMax)
-			fragColour = vec4(fogColour, 1.0);
-		else if (depth < fogMin)
-			fragColour = vec4(scene, 1.0);
-		else
-			fragColour = vec4(mix(scene, fogColour, (depth - fogMin) / depthScale), 1.0);
+		float t = clamp((depth - fogMin) / depthScale, 0.0, 1.0);
+		fragColour = vec4(mix(scene, fogColour, t), 1.0);
 	}
 }

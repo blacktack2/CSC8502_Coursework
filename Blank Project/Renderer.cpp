@@ -180,6 +180,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	BindShader(presentShader);
 	glUniform1i(UniformLocation("diffuseTex"), 0);
 
+	SetPostProcess(true);
 	init = true;
 }
 Renderer::~Renderer(void) {
@@ -230,7 +231,9 @@ void Renderer::RenderScene() {
 	FillBuffers();
 	DrawLights();
 	CombineBuffers();
-	DrawFog();
+	if (postProcess) {
+		DrawFog();
+	}
 	PresentScene();
 
 	ClearNodeLists();
@@ -243,6 +246,15 @@ void Renderer::UpdateScene(float dt) {
 
 	BindShader(skyboxShader);
 	glUniform1f(UniformLocation("time"), window.GetTimer()->GetTotalTimeSeconds());
+}
+
+void Renderer::SetPostProcess(bool pp) {
+	OGLRenderer::SetPostProcess(pp);
+	if (postProcess) {
+		sceneTexOut = sceneTex2;
+	} else {
+		sceneTexOut = sceneTex1;
+	}
 }
 
 void Renderer::DrawSkybox() {
@@ -334,6 +346,9 @@ void Renderer::DrawFog() {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
 
+	Matrix4 invViewProj = (cameraProjMatrix * cameraViewMatrix).Inverse();
+	glUniformMatrix4fv(UniformLocation("inverseProjView"), 1, false, invViewProj.values);
+
 	quad->Draw();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -343,7 +358,7 @@ void Renderer::PresentScene() {
 	BindShader(presentShader);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, sceneTex2);
+	glBindTexture(GL_TEXTURE_2D, sceneTexOut);
 
 	quad->Draw();
 }
