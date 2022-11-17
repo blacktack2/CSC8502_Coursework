@@ -14,6 +14,7 @@ public:
 	~SceneNode();
 
 	inline Shader* GetShader() const { return shader; }
+	inline Shader* GetDepthShader() const { return depthShader; }
 
 	inline const Matrix4& GetWorldTransform() const { return worldTransform; }
 
@@ -54,6 +55,7 @@ protected:
 	SceneNode* parent = nullptr;
 
 	Shader* shader = nullptr;
+	Shader* depthShader = nullptr;
 
 	Matrix4 worldTransform{};
 

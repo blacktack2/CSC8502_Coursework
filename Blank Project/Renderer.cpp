@@ -23,14 +23,14 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	camera = new Camera();
 
-	camera->SetPosition(Vector3(0.0f, 400.0f, 0.0f));
-
 	skyboxShader = new Shader("skybox.vert", "skybox.frag");
 
 	sceneShader = new Shader("buffer.vert", "buffer.frag");
 	heightmapShader = new Shader("heightmap.vert", "heightmap.frag", "", "heightmap.tesc", "heightmap.tese");
 
-	shadowShader = new Shader("shadow.vert", "shadow.frag");
+	depthShader = new Shader("depth.vert", "depth.frag");
+	heightmapDepthShader = new Shader("heightmapDepth.vert", "heightmapDepth.frag", "", "heightmapDepth.tesc", "heightmapDepth.tese");
+
 	lightShader = new Shader("light.vert", "light.frag");
 
 	combineShader = new Shader("combine.vert", "combine.frag");
@@ -38,18 +38,22 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	noiseShader = new Shader("noise.vert", "noise.frag");
 
 	AddShader("skybox", skyboxShader);
+
 	AddShader("scene", sceneShader);
-	AddShader("shadow", shadowShader);
-	AddShader("light", lightShader);
-	AddShader("combine", combineShader);
 	AddShader("heightmap", heightmapShader);
+
+	AddShader("depth", depthShader);
+	AddShader("heightmapDepth", heightmapDepthShader);
+
+	AddShader("light", lightShader);
+
+	AddShader("combine", combineShader);
 
 	AddShader("noise", noiseShader);
 
 	if(!skyboxShader->LoadSuccess() ||
-		!sceneShader->LoadSuccess() ||
-		!heightmapShader->LoadSuccess() ||
-		!shadowShader->LoadSuccess() ||
+		!sceneShader->LoadSuccess() || !heightmapShader->LoadSuccess() ||
+		!depthShader->LoadSuccess() || !heightmapDepthShader->LoadSuccess() ||
 		!lightShader->LoadSuccess() ||
 		!combineShader->LoadSuccess() ||
 		!noiseShader->LoadSuccess())
@@ -73,7 +77,6 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	GenerateScreenTexture(bufferColourTex);
 	GenerateScreenTexture(bufferNormalTex);
 	GenerateScreenTexture(shadowTex, true, true);
-	GenerateScreenTexture(lightAmbienceTex);
 	GenerateScreenTexture(lightDiffuseTex);
 	GenerateScreenTexture(lightSpecularTex);
 
@@ -94,9 +97,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 		return;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightAmbienceTex, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, lightDiffuseTex, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, lightSpecularTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightDiffuseTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, lightSpecularTex, 0);
 	glDrawBuffers(3, buffers);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -125,20 +127,21 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glUniform1i(UniformLocation("heightTex"), 2);
 	glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, cameraProjMatrix.values);
 
-	BindShader(lightShader);
+	BindShader(heightmapDepthShader);
+	glUniform1i(UniformLocation("heightTex"), 2);
 
+	BindShader(lightShader);
 	glUniform1i(UniformLocation("depthTex"), 0);
 	glUniform1i(UniformLocation("normTex"), 1);
 	glUniform1i(UniformLocation("shadowTex"), 2);
 
 	BindShader(combineShader);
-
 	glUniform1i(UniformLocation("diffuseTex"), 0);
-	glUniform1i(UniformLocation("ambienceTex"), 1);
+	glUniform1i(UniformLocation("normTex"), 1);
 	glUniform1i(UniformLocation("diffuseLight"), 2);
 	glUniform1i(UniformLocation("specularLight"), 3);
-
 	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
+	glUniform1i(UniformLocation("mode"), 0);
 
 	init = true;
 }
@@ -151,7 +154,7 @@ Renderer::~Renderer(void) {
 
 	delete skyboxShader;
 	delete sceneShader;
-	delete shadowShader;
+	delete depthShader;
 	delete lightShader;
 	delete combineShader;
 	delete heightmapShader;
@@ -161,7 +164,6 @@ Renderer::~Renderer(void) {
 	glDeleteTextures(1, &bufferColourTex);
 	glDeleteTextures(1, &bufferNormalTex);
 	glDeleteTextures(1, &bufferDepthTex);
-	glDeleteTextures(1, &lightAmbienceTex);
 	glDeleteTextures(1, &lightDiffuseTex);
 	glDeleteTextures(1, &lightSpecularTex);
 
@@ -222,7 +224,7 @@ void Renderer::DrawLights() {
 	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	BindShader(shadowShader);
+	BindShader(depthShader);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -256,7 +258,7 @@ void Renderer::CombineBuffers() {
 	glBindTexture(GL_TEXTURE_2D, bufferColourTex);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, lightAmbienceTex);
+	glBindTexture(GL_TEXTURE_2D, bufferNormalTex);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, lightDiffuseTex);
@@ -310,23 +312,23 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 	if (node->light && node->lightMesh) {
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		BindShader(shadowShader);
-		Matrix4 shadowProjMatrix;
-		Matrix4 shadowViewMatrix;
+		BindShader(depthShader);
+		Matrix4 depthProjViewMatrix;
+		Matrix4 depthProjMatrix;
+		Matrix4 depthViewMatrix;
 		if (node->light->position.w == 0.0f) {
-			shadowViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * -10), Vector3());
-			shadowProjMatrix = Matrix4::Orthographic(-1.0f, 10000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
+			depthViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * -10), Vector3());
+			depthProjMatrix = Matrix4::Orthographic(-1.0f, 10000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
 		} else {
-			shadowViewMatrix = Matrix4::BuildViewMatrix(node->light->position.ToVector3(), Vector3());
-			shadowProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 170.0f);
+			depthViewMatrix = Matrix4::BuildViewMatrix(node->light->position.ToVector3(), Vector3());
+			depthProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 170.0f);
 		}
-		glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, shadowViewMatrix.values);
-		glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, shadowProjMatrix.values);
+		depthProjViewMatrix = depthProjMatrix * depthViewMatrix;
 
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		PushViewport(Vector4(0, 0, SHADOWSIZE, SHADOWSIZE));
 
-		DrawNodeShadows(root);
+		DrawNodeDepth(root, depthProjViewMatrix);
 
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		PopViewport();
@@ -334,7 +336,7 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
 		BindShader(lightShader);
 		SetShaderLight(node->light);
-		Matrix4 shadowMatrix = shadowProjMatrix * shadowViewMatrix;
+		Matrix4 shadowMatrix = depthProjMatrix * depthViewMatrix;
 		glUniformMatrix4fv(UniformLocation("shadowMatrix"), 1, false, shadowMatrix.values);
 
 		glBlendFunc(GL_ONE, GL_ONE);
@@ -355,10 +357,15 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		DrawNodeLights(child);
 }
 
-void Renderer::DrawNodeShadows(SceneNode* node) {
+void Renderer::DrawNodeDepth(SceneNode* node, Matrix4& projViewMatrix) {
+	if (!node->GetDepthShader())
+		BindShader(depthShader);
+	else
+		BindShader(node->GetDepthShader());
+	glUniformMatrix4fv(UniformLocation("projViewMatrix"), 1, false, projViewMatrix.values);
 	node->DrawMeshDepth();
 	for (auto child : *node)
-		DrawNodeShadows(child);
+		DrawNodeDepth(child, projViewMatrix);
 }
 
 void Renderer::GenerateScreenTexture(GLuint& into, bool depth, bool shadow) {

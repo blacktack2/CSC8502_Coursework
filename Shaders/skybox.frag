@@ -152,7 +152,7 @@ void main() {
 	vec3 night_extinction = vec3(1.0 - exp(sun.y)) * 0.2;
 	vec3 extinction = mix(day_extinction, night_extinction, -sun.y * 0.2 + 0.5);
 
-	fragColour[0] = vec4(rayleigh * mie * extinction, 1.0);
+	fragColour[0].rgb = vec3(rayleigh * mie * extinction);
 	
 	if (IN.viewDir.y > 0.0) {
 		float cirrusDensity = smoothstep(1.0 - cirrus, 1.0, fBm(view / view.y * 2.0 + time * 0.05)) * 0.3;
@@ -165,4 +165,6 @@ void main() {
 	}
 
 	fragColour[0].rgb += simplex(view * 1000) * 0.01;
+	fragColour[0].w = 1.0;
+	fragColour[1] = vec4(0.0);
 }

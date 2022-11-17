@@ -3,7 +3,6 @@
 #include "../nclgl/Light.h"
 #include "../nclgl/LightNode.h"
 #include "OrbiterNode.h"
-#include "PHeightMapMasterNode.h"
 #include "SunNode.h"
 
 #include <algorithm>
@@ -13,6 +12,8 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Camera& camera) : SceneNode(
 	int heightMapResolution = 10;
 	float heightMapWorldSize = 100.0f;
 
+	camera.SetPosition(Vector3(0.0f, heightMapWorldSize, 0.0f));
+
 	GLuint earthTex = renderer.GetTexture("earthTex");
 	GLuint earthBump = renderer.GetTexture("earthBump");
 
@@ -21,7 +22,7 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Camera& camera) : SceneNode(
 	quad = Mesh::GenerateQuad();
 	heightmapQuad = Mesh::GeneratePatchQuad(heightMapWorldSize);
 
-	PHeightMapMasterNode* heightMapMaster = new PHeightMapMasterNode(renderer, camera);
+	heightMapMaster = new PHeightMapMasterNode(renderer, camera);
 	AddChild(heightMapMaster);
 
 	pointLightsNode = new SceneNode(renderer);
@@ -55,14 +56,14 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Camera& camera) : SceneNode(
 
 	SceneNode* orbiterNodes = new SceneNode(renderer);
 	AddChild(orbiterNodes);
-	orbiterNodes->transform = Matrix4::Translation(Vector3(-2000.0f, 300.0f, -2000.0f));
+	orbiterNodes->transform = Matrix4::Translation(Vector3(-200.0f, 100.0f, -200.0f));
 	for (int i = 0; i < 10; i++) {
 		SceneNode* orbitPoint = new SceneNode(renderer);
 		orbiterNodes->AddChild(orbitPoint);
-		orbitPoint->transform = Matrix4::Translation(Vector3(rand() % 4000, (float)(rand() % 200), rand() % 4000));
-		OrbiterNode* orbiter = new OrbiterNode(renderer, 10.0f + (rand() % 200), -10.0f + (rand() % 20));
+		orbitPoint->transform = Matrix4::Translation(Vector3(rand() % 400, (float)(rand() % 20), rand() % 400));
+		OrbiterNode* orbiter = new OrbiterNode(renderer, 1.0f + (rand() % 20), -10.0f + (rand() % 20));
 		orbitPoint->AddChild(orbiter);
-		orbiter->modelScale = Vector3(1.0f, 1.0f, 1.0f) * (50.0f + (rand() % 150));
+		orbiter->modelScale = Vector3(1.0f, 1.0f, 1.0f) * (3.0f + (rand() % 7));
 		orbiter->mesh = sphere;
 		orbiter->diffuseTex = earthTex;
 		orbiter->bumpTex = earthBump;
@@ -77,6 +78,12 @@ DemoSceneNode::~DemoSceneNode() {
 }
 
 void DemoSceneNode::Update(float dt) {
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_1))
+		heightMapMaster->paused = !heightMapMaster->paused;
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_2)) {
+		renderMode = (renderMode + 1) % 2;
+		renderer.SetShaderUniformi("combine", "mode", renderMode);
+	}
 	SceneNode::Update(dt);
 	static float offset = 0.0;
 	offset += dt;

@@ -17,6 +17,7 @@ public:
 	float heightMapWorldSize = 100.0f;
 protected:
 	virtual void PreDrawMesh() override;
+	virtual void PreDrawMeshDepth() override;
 
 	int offsetX;
 	int offsetZ;

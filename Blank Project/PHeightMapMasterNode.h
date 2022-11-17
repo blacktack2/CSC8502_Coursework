@@ -11,6 +11,8 @@ public:
 	~PHeightMapMasterNode();
 
 	virtual void Update(float dt) override;
+
+	bool paused = false;
 protected:
 	void UpdateHeightMaps(int offsetX, int offsetZ, bool fromScratch = false);
 

@@ -37,8 +37,7 @@ as the current renderer of the passed 'parent' Window. Not the best
 way to do it - but it kept the Tutorial code down to a minimum!
 */
 OGLRenderer::OGLRenderer(Window &window) : window(window) {
-	init					= false;
-	clearColourStack.emplace(0.0f, 0.0f, 0.0f, 0.0f);
+	init = false;
 	HWND windowHandle = window.GetHandle();
 
 	// Did We Get A Device Context?
@@ -142,11 +141,11 @@ OGLRenderer::OGLRenderer(Window &window) : window(window) {
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 #endif
 
-	glClearColor(0.2f,0.2f,0.2f,1.0f);			//When we clear the screen, we want it to be dark grey
+	currentShader = nullptr;
 
-	currentShader = 0;							//0 is the 'null' object name for shader programs...
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-	window.SetRenderer(this);					//Tell our window about the new renderer! (Which will in turn resize the renderer window to fit...)
+	window.SetRenderer(this);
 }
 
 /*
@@ -173,8 +172,12 @@ void OGLRenderer::PushClearColour(Vector4 colour) {
 
 void OGLRenderer::PopClearColour() {
 	clearColourStack.pop();
-	Vector4 colour = clearColourStack.top();
-	glClearColor(colour.x, colour.y, colour.z, colour.w);
+	if (clearColourStack.empty()) {
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	} else {
+		Vector4 colour = clearColourStack.top();
+		glClearColor(colour.x, colour.y, colour.z, colour.w);
+	}
 }
 
 void OGLRenderer::PushViewport(Vector4 viewport) {

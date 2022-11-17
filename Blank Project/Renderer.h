@@ -29,7 +29,7 @@ protected:
 
 	void DrawNodeLights(SceneNode* node);
 
-	void DrawNodeShadows(SceneNode* node);
+	void DrawNodeDepth(SceneNode* node, Matrix4& projViewMatrix);
 
 	void GenerateScreenTexture(GLuint& into, bool depth = false, bool shadow = false);
 
@@ -44,11 +44,16 @@ protected:
 	Frustum frameFrustum;
 
 	Shader* skyboxShader = nullptr;
+
 	Shader* sceneShader = nullptr;
-	Shader* shadowShader = nullptr;
-	Shader* lightShader = nullptr;
-	Shader* combineShader = nullptr;
 	Shader* heightmapShader = nullptr;
+
+	Shader* depthShader = nullptr;
+	Shader* heightmapDepthShader = nullptr;
+
+	Shader* lightShader = nullptr;
+
+	Shader* combineShader = nullptr;
 
 	Shader* noiseShader = nullptr;
 
@@ -66,7 +71,6 @@ protected:
 
 	GLuint shadowTex = 0;
 
-	GLuint lightAmbienceTex = 0;
 	GLuint lightDiffuseTex = 0;
 	GLuint lightSpecularTex = 0;
 

@@ -1,7 +1,5 @@
 #version 400 core
 
-uniform mat4 modelMatrix;
-
 in vec3 position;
 in vec4 colour;
 in vec3 normal;

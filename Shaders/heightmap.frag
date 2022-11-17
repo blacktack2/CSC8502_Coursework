@@ -2,7 +2,6 @@
 
 uniform sampler2D diffuseTex;
 uniform sampler2D bumpTex;
-uniform sampler2D heightTex;
 
 in Vertex {
 	vec4 colour;

@@ -46,22 +46,14 @@ void SceneNode::Update(float dt) {
 
 void SceneNode::DrawMesh() {
 	if (mesh) {
-		Matrix4 model = GetWorldTransform() * Matrix4::Scale(modelScale);
-		glUniformMatrix4fv(renderer.UniformLocation("modelMatrix"), 1, false, model.values);
-
 		PreDrawMesh();
-
 		mesh->Draw();
 	}
 }
 
 void SceneNode::DrawMeshDepth() {
 	if (mesh && occluder) {
-		Matrix4 model = GetWorldTransform() * Matrix4::Scale(modelScale);
-		glUniformMatrix4fv(renderer.UniformLocation("modelMatrix"), 1, false, model.values);
-
 		PreDrawMeshDepth();
-
 		mesh->Draw();
 	}
 }
@@ -72,6 +64,9 @@ void SceneNode::DrawLight() {
 }
 
 void SceneNode::PreDrawMesh() {
+	Matrix4 model = GetWorldTransform() * Matrix4::Scale(modelScale);
+	glUniformMatrix4fv(renderer.UniformLocation("modelMatrix"), 1, false, model.values);
+
 	if (diffuseTex) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseTex);
@@ -84,4 +79,6 @@ void SceneNode::PreDrawMesh() {
 }
 
 void SceneNode::PreDrawMeshDepth() {
+	Matrix4 model = GetWorldTransform() * Matrix4::Scale(modelScale);
+	glUniformMatrix4fv(renderer.UniformLocation("modelMatrix"), 1, false, model.values);
 }

@@ -2,6 +2,8 @@
 #include "../nclgl/SceneNode.h"
 #include "../nclgl/Vector3.h"
 
+#include <vector>
+
 class SunNode : public SceneNode {
 public:
 	SunNode(OGLRenderer& renderer, Mesh* quad);
@@ -13,21 +15,23 @@ protected:
 
 	float currentTime = 0.0f;
 
-	const float TIME_SCALE = 1.0f;
+	const float TIME_SCALE = 5.0f;
 
-	const float DAWN = 6.0f;
-	const float NOON = 12.0f;
-	const float DUSK = 18.0f;
-	const float MIDN = 24.0f;
-
-	const Vector3 AMBIENCE_DAWN = Vector3(0.2f, 0.2f, 0.1f);
-	const Vector3 AMBIENCE_NOON = Vector3(0.3f, 0.2f, 0.1f);
-	const Vector3 AMBIENCE_DUSK = Vector3(0.3f, 0.15f, 0.1f);
-	const Vector3 AMBIENCE_MIDN = Vector3(0.1f, 0.1f, 0.2f);
-
-	const Vector4 LIGHT_DAWN = Vector4(0.5f, 0.4f, 0.2f, 1.0f);
-	const Vector4 LIGHT_NOON = Vector4(0.8f, 0.8f, 0.5f, 1.0f);
-	const Vector4 LIGHT_DUSK = Vector4(0.4f, 0.2f, 0.2f, 1.0f);
-	const Vector4 LIGHT_MIDN = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+	const std::vector<std::pair<int, Vector3>> AMBIENCE = {
+		{0.0f, Vector3(0.1f, 0.1f, 0.2f)},
+		{6.0f, Vector3(0.1f, 0.1f, 0.2f)},
+		{12.0f, Vector3(0.3f, 0.2f, 0.1f)},
+		{18.0f, Vector3(0.1f, 0.1f, 0.2f)},
+		{24.0f, Vector3(0.1f, 0.1f, 0.2f)}
+	};
+	const std::vector<std::pair<int, Vector4>> LIGHT = {
+		{0.0f, Vector4(0.0f, 0.0f, 0.0f, 1.0f)},
+		{6.0f, Vector4(0.0f, 0.0f, 0.0f, 1.0f)},
+		{7.0f, Vector4(0.4f, 0.4f, 0.1f, 1.0f)},
+		{12.0f, Vector4(0.8f, 0.8f, 0.5f, 1.0f)},
+		{17.0f, Vector4(0.5f, 0.3f, 0.1f, 1.0f)},
+		{18.0f, Vector4(0.0f, 0.0f, 0.0f, 1.0f)},
+		{24.0f, Vector4(0.0f, 0.0f, 0.0f, 1.0f)}
+	};
 };
 

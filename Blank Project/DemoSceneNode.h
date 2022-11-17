@@ -2,6 +2,7 @@
 #include "../nclgl/Camera.h"
 #include "../nclgl/HeightMap.h"
 #include "../nclgl/SceneNode.h"
+#include "PHeightMapMasterNode.h"
 
 class DemoSceneNode : public SceneNode {
 public:
@@ -10,6 +11,7 @@ public:
 
 	virtual void Update(float dt);
 protected:
+	PHeightMapMasterNode* heightMapMaster = nullptr;
 	SceneNode* pointLightsNode = nullptr;
 	SceneNode* spotLightsNode = nullptr;
 	SceneNode* sunNode = nullptr;
@@ -18,5 +20,7 @@ protected:
 	Mesh* cube = nullptr;
 	Mesh* quad = nullptr;
 	Mesh* heightmapQuad = nullptr;
+
+	int renderMode = 0;
 };
 

@@ -16,9 +16,6 @@ uniform vec4 lightColour;
 uniform vec3 lightDir;
 uniform float lightAngle;
 
-uniform vec3 ambienceColour;
-
-out vec4 ambienceOutput;
 out vec4 diffuseOutput;
 out vec4 specularOutput;
 
@@ -68,7 +65,6 @@ void main() {
 
 	vec3 attenuated = lightColour.xyz * atten;
 
-	ambienceOutput = vec4(ambienceColour, 1.0);
 	diffuseOutput = vec4(attenuated * lambert * shadow, 1.0);
 	specularOutput = vec4(attenuated * specFactor * 0.33 * shadow, 1.0);
 }

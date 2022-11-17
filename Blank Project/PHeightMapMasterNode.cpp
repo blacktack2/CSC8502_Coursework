@@ -6,7 +6,7 @@ PHeightMapMasterNode::PHeightMapMasterNode(OGLRenderer& renderer, Camera& camera
 	cameraOffsetZ = cameraPos.z / heightMapWorldSize;
 
 	quad = Mesh::GenerateQuad();
-	heightMapQuad = Mesh::GeneratePatchQuad(heightMapWorldSize);
+	heightMapQuad = Mesh::GeneratePatchQuad(heightMapWorldSize * 0.10);
 	UpdateHeightMaps(0, 0, true);
 }
 
@@ -17,11 +17,13 @@ PHeightMapMasterNode::~PHeightMapMasterNode() {
 
 void PHeightMapMasterNode::Update(float dt) {
 	SceneNode::Update(dt);
-	Vector3 cameraPos = camera.GetPosition();
-	int offsetX = cameraPos.x / heightMapWorldSize;
-	int offsetZ = cameraPos.z / heightMapWorldSize;
-	if (offsetX != cameraOffsetX || offsetZ != cameraOffsetZ)
-		UpdateHeightMaps(offsetX, offsetZ);
+	if (!paused) {
+		Vector3 cameraPos = camera.GetPosition();
+		int offsetX = cameraPos.x / heightMapWorldSize;
+		int offsetZ = cameraPos.z / heightMapWorldSize;
+		if (offsetX != cameraOffsetX || offsetZ != cameraOffsetZ)
+			UpdateHeightMaps(offsetX, offsetZ);
+	}
 }
 
 void PHeightMapMasterNode::UpdateHeightMaps(int offsetX, int offsetZ, bool fromScratch) {

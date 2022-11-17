@@ -1,9 +1,13 @@
 #version 330 core
 
 uniform sampler2D diffuseTex;
-uniform sampler2D ambienceTex;
+uniform sampler2D normTex;
 uniform sampler2D diffuseLight;
 uniform sampler2D specularLight;
+
+uniform vec3 ambienceColour;
+
+uniform int mode;
 
 in Vertex {
 	vec2 texCoord;
@@ -12,17 +16,22 @@ in Vertex {
 out vec4 fragColour;
 
 void main() {
-	vec3 diffuse = texture(diffuseTex, IN.texCoord).rgb;
-	vec4 ambience = texture(ambienceTex, IN.texCoord);
-	if (ambience.w == 0.0) {
-		fragColour = vec4(diffuse, 1.0);
-		return;
-	}
-	vec3 light = texture(diffuseLight, IN.texCoord).rgb;
-	vec3 spec = texture(specularLight, IN.texCoord).rgb;
+	if (mode == 1) {
+		vec4 normal = texture(normTex, IN.texCoord);
+		fragColour.rgb = normal.rgb;
+	} else {
+		vec4 diffuse = texture(diffuseTex, IN.texCoord);
+		vec4 normal = texture(normTex, IN.texCoord);
+		if (normal.w == 0.0) {
+			fragColour = vec4(diffuse.rgb, 1.0);
+			return;
+		}
+		vec3 light = texture(diffuseLight, IN.texCoord).rgb;
+		vec3 spec = texture(specularLight, IN.texCoord).rgb;
 
-	fragColour.xyz = diffuse * light;
-	fragColour.xyz += spec;
-	fragColour.xyz += diffuse * ambience.xyz;
-	fragColour.w = 1.0;
+		fragColour.rgb = diffuse.rgb * light;
+		fragColour.rgb += spec;
+		fragColour.rgb += diffuse.rgb * ambienceColour;
+	}
+	fragColour.a = 1.0;
 }

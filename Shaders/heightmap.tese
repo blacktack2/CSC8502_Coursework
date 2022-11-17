@@ -62,6 +62,8 @@ void main() {
 
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 	
+	float height = texture(heightTex, gl_TessCoord.xy).r;
+
 	vec3 wNormal = normalize(normalMatrix * normalize(normal));
 	vec3 wTangent = normalize(normalMatrix * normalize(tangent.xyz));
 
@@ -71,7 +73,6 @@ void main() {
 
 	vec4 worldPos = modelMatrix * position;
 
-	float height = texture(heightTex, gl_TessCoord.xy).r;
 	worldPos.y += height * maxHeight;
 
 	OUT.worldPos = worldPos.xyz;
