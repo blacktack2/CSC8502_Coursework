@@ -81,7 +81,7 @@ void DemoSceneNode::Update(float dt) {
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_1))
 		heightMapMaster->paused = !heightMapMaster->paused;
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_2)) {
-		renderMode = (renderMode + 1) % 2;
+		renderMode = (renderMode + 1) % 3;
 		renderer.SetShaderUniformi("combine", "mode", renderMode);
 		renderer.SetPostProcess(renderMode == 0);
 	}

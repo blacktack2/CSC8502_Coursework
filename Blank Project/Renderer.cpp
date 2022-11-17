@@ -164,9 +164,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	BindShader(combineShader);
 	glUniform1i(UniformLocation("diffuseTex"), 0);
-	glUniform1i(UniformLocation("normTex"), 1);
-	glUniform1i(UniformLocation("diffuseLight"), 2);
-	glUniform1i(UniformLocation("specularLight"), 3);
+	glUniform1i(UniformLocation("diffuseLight"), 1);
+	glUniform1i(UniformLocation("specularLight"), 2);
+	glUniform1i(UniformLocation("normTex"), 3);
+	glUniform1i(UniformLocation("depthTex"), 4);
 	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
 	glUniform1i(UniformLocation("mode"), 0);
 
@@ -321,13 +322,16 @@ void Renderer::CombineBuffers() {
 	glBindTexture(GL_TEXTURE_2D, bufferColourTex);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bufferNormalTex);
-
-	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, lightDiffuseTex);
 
-	glActiveTexture(GL_TEXTURE3);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, lightSpecularTex);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, bufferNormalTex);
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
 
 	quad->Draw();
 

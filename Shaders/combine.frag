@@ -1,9 +1,10 @@
 #version 330 core
 
 uniform sampler2D diffuseTex;
-uniform sampler2D normTex;
 uniform sampler2D diffuseLight;
 uniform sampler2D specularLight;
+uniform sampler2D normTex;
+uniform sampler2D depthTex;
 
 uniform vec3 ambienceColour;
 
@@ -19,6 +20,9 @@ void main() {
 	if (mode == 1) {
 		vec4 normal = texture(normTex, IN.texCoord);
 		fragColour.rgb = normal.rgb;
+	} else if (mode == 2) {
+		float depth = texture(depthTex, IN.texCoord).r;
+		fragColour.rgb = vec3((depth - 0.990) * (1.0 / 0.01));
 	} else {
 		vec4 diffuse = texture(diffuseTex, IN.texCoord);
 		vec4 normal = texture(normTex, IN.texCoord);
