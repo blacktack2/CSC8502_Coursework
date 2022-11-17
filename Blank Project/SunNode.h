@@ -24,6 +24,13 @@ protected:
 		{18.0f, Vector3(0.1f, 0.1f, 0.2f)},
 		{24.0f, Vector3(0.1f, 0.1f, 0.2f)}
 	};
+	const std::vector<std::pair<int, Vector3>> FOG = {
+		{0.0f, Vector3(0.1f, 0.1f, 0.2f)},
+		{6.0f, Vector3(0.1f, 0.1f, 0.2f)},
+		{12.0f, Vector3(0.3f, 0.2f, 0.1f)},
+		{18.0f, Vector3(0.1f, 0.1f, 0.2f)},
+		{24.0f, Vector3(0.1f, 0.1f, 0.2f)}
+	};
 	const std::vector<std::pair<int, Vector4>> LIGHT = {
 		{0.0f, Vector4(0.0f, 0.0f, 0.0f, 1.0f)},
 		{6.0f, Vector4(0.0f, 0.0f, 0.0f, 1.0f)},

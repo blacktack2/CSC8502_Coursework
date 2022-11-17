@@ -28,6 +28,13 @@ void SunNode::Update(float dt) {
 			break;
 		}
 	}
+	for (int i = 1; i < FOG.size(); i++) {
+		if (currentTime < FOG[i].first) {
+			Vector3 fog = Vector3::Lerp(FOG[i - 1].second, FOG[i].second, (currentTime - FOG[i - 1].first) / (FOG[i].first - FOG[i - 1].first));
+			renderer.SetShaderUniformf("fog", "fogColour", fog.x, fog.y, fog.z);
+			break;
+		}
+	}
 	for (int i = 1; i < LIGHT.size(); i++) {
 		if (currentTime < LIGHT[i].first) {
 			sunLightNode->light->colour = Vector4::Lerp(LIGHT[i - 1].second, LIGHT[i].second, (currentTime - LIGHT[i - 1].first) / (LIGHT[i].first - LIGHT[i - 1].first));
