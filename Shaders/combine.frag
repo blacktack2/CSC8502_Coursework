@@ -22,7 +22,7 @@ void main() {
 		fragColour.rgb = normal.rgb;
 	} else if (mode == 2) {
 		float depth = texture(depthTex, IN.texCoord).r;
-		fragColour.rgb = vec3((depth - 0.990) * (1.0 / 0.01));
+		fragColour.rgb = vec3((depth - 0.98) * (1.0 / 0.02));
 	} else {
 		vec4 diffuse = texture(diffuseTex, IN.texCoord);
 		vec4 normal = texture(normTex, IN.texCoord);

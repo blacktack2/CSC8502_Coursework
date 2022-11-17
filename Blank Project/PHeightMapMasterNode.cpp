@@ -59,7 +59,7 @@ void PHeightMapMasterNode::CreateHeightMap(int x, int z) {
 	PHeightMapNode* heightMap = new PHeightMapNode(renderer, quad, heightMapQuad, x, z);
 	AddChild(heightMap);
 	childHeightMaps.emplace((x + 128) | ((z + 128) << 8), heightMap);
-	heightMap->transform = Matrix4::Translation(Vector3(x * heightMapWorldSize, 0.0f, z * heightMapWorldSize)) * Matrix4::Rotation(-90, Vector3(1, 0, 0));
+	heightMap->transform = Matrix4::Translation(Vector3(x * heightMapWorldSize, 0.0f, z * heightMapWorldSize));
 	heightMap->diffuseTex = renderer.GetTexture("earthTex");
 	heightMap->bumpTex = renderer.GetTexture("earthBump");
 

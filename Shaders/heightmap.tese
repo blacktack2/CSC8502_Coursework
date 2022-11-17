@@ -13,8 +13,6 @@ uniform float maxHeight;
 in Vertex {
 	vec4 colour;
 	vec2 texCoord;
-	vec3 normal;
-	vec4 tangent;
 } IN[];
 
 out Vertex {
@@ -48,32 +46,18 @@ void main() {
 	vec2 tx3 = IN[3].texCoord;
 	OUT.texCoord = mix(mix(tx0, tx1, u), mix(tx2, tx3, u), v);
 
-	vec3 n0 = IN[0].normal;
-	vec3 n1 = IN[1].normal;
-	vec3 n2 = IN[2].normal;
-	vec3 n3 = IN[3].normal;
-	vec3 normal = mix(mix(n0, n1, u), mix(n2, n3, u), v);
-
-	vec4 ta0 = IN[0].tangent;
-	vec4 ta1 = IN[1].tangent;
-	vec4 ta2 = IN[2].tangent;
-	vec4 ta3 = IN[3].tangent;
-	vec4 tangent = mix(mix(ta0, ta1, u), mix(ta2, ta3, u), v);
-
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 	
-	float height = texture(heightTex, gl_TessCoord.xy).r;
+	float height = textureOffset(heightTex, gl_TessCoord.xy, ivec2(-10, -10)).r * maxHeight;
 
-	vec3 wNormal = normalize(normalMatrix * normalize(normal));
-	vec3 wTangent = normalize(normalMatrix * normalize(tangent.xyz));
+	float h10 = textureOffset(heightTex, gl_TessCoord.xy, ivec2(1, 0)).r * maxHeight;
+	float h01 = textureOffset(heightTex, gl_TessCoord.xy, ivec2(0, 1)).r * maxHeight;
 
-	OUT.normal = wNormal;
-	OUT.tangent = wTangent;
-	OUT.binormal = cross(wTangent, wNormal) * tangent.w;
+	OUT.binormal  = normalize(vec3(1.0, height - h10, 0.0));
+	OUT.tangent = normalize(vec3(0.0, height - h01, 1.0));
+	OUT.normal = normalize(cross(OUT.tangent, OUT.binormal));
 
-	vec4 worldPos = modelMatrix * position;
-
-	worldPos.y += height * maxHeight;
+	vec4 worldPos = modelMatrix * (position + vec4(0.0, height, 0.0, 0.0));
 
 	OUT.worldPos = worldPos.xyz;
 	gl_Position = projMatrix * viewMatrix * worldPos;

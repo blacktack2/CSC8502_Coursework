@@ -507,10 +507,10 @@ Mesh* Mesh::GeneratePatchQuad(float texelSize) {
 	m->type = GL_PATCHES;
 
 	m->textureCoords = new Vector2[m->numVertices];
-	m->textureCoords[0] = Vector2(0.0f     , 0.0f);
-	m->textureCoords[1] = Vector2(texelSize, 0.0f);
-	m->textureCoords[2] = Vector2(0.0f     , texelSize);
-	m->textureCoords[3] = Vector2(texelSize, texelSize);
+	m->textureCoords[0] = Vector2(0.0f     , texelSize);
+	m->textureCoords[1] = Vector2(texelSize, texelSize);
+	m->textureCoords[2] = Vector2(0.0f     , 0.0f);
+	m->textureCoords[3] = Vector2(texelSize, 0.0f);
 	
 	m->vertices = new Vector3[m->numVertices];
 	m->colours = new Vector4[m->numVertices];
@@ -518,9 +518,9 @@ Mesh* Mesh::GeneratePatchQuad(float texelSize) {
 	m->tangents = new Vector4[m->numVertices];
 	for (int i = 0; i < m->numVertices; i++) {
 		Vector2 tex = m->textureCoords[i];
-		m->vertices[i] = Vector3((tex.x == 0) ? -1.0f : 1.0f, (tex.y == 0) ? -1.0f : 1.0f, 0.0f);
+		m->vertices[i] = Vector3((tex.x == 0) ? -1.0f : 1.0f, 0.0f, (tex.y == 0) ? -1.0f : 1.0f);
 		m->colours[i]  = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-		m->normals[i]  = Vector3(0.0f, 0.0f, -1.0f);
+		m->normals[i]  = Vector3(0.0f, -1.0f, 0.0f);
 		m->tangents[i] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 

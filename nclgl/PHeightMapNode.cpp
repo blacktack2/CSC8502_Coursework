@@ -16,7 +16,7 @@ void PHeightMapNode::Generate() {
 	renderer.SetShaderUniformf("heightmap", "maxHeight", maxHeight);
 	renderer.SetShaderUniformf("heightmapDepth", "maxHeight", maxHeight);
 
-	modelScale = Vector3(heightMapWorldSize / 2.0f, heightMapWorldSize / 2.0f, 1.0f);
+	modelScale = Vector3(heightMapWorldSize / 2.0f, 1.0f, heightMapWorldSize / 2.0f);
 
 	heightMap.resolutionX = heightMapWorldSize;
 	heightMap.resolutionZ = heightMapWorldSize;
