@@ -160,7 +160,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	BindShader(lightShader);
 	glUniform1i(UniformLocation("depthTex"), 0);
 	glUniform1i(UniformLocation("normTex"), 1);
-	glUniform1i(UniformLocation("shadowTex"), 2);
+	glUniform1i(UniformLocation("shadowTex"), 3);
 
 	BindShader(combineShader);
 	glUniform1i(UniformLocation("diffuseTex"), 0);
@@ -298,7 +298,7 @@ void Renderer::DrawLights() {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bufferNormalTex);
 
-	glActiveTexture(GL_TEXTURE2);
+	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, shadowTex);
 
 	glUniform3fv(UniformLocation("cameraPos"), 1, (float*)&camera->GetPosition());
@@ -415,7 +415,7 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		Matrix4 depthProjMatrix;
 		Matrix4 depthViewMatrix;
 		if (node->light->position.w == 0.0f) {
-			depthViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * -10), Vector3());
+			depthViewMatrix = Matrix4::BuildViewMatrix((node->light->direction * 100), Vector3());
 			depthProjMatrix = Matrix4::Orthographic(-1.0f, 10000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
 		} else {
 			depthViewMatrix = Matrix4::BuildViewMatrix(node->light->position.ToVector3(), Vector3());

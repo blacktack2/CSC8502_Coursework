@@ -56,11 +56,11 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Camera& camera) : SceneNode(
 
 	SceneNode* orbiterNodes = new SceneNode(renderer);
 	AddChild(orbiterNodes);
-	orbiterNodes->transform = Matrix4::Translation(Vector3(-200.0f, 100.0f, -200.0f));
+	orbiterNodes->transform = Matrix4::Translation(Vector3(-200.0f, heightMapWorldSize / 2.0f, -200.0f));
 	for (int i = 0; i < 10; i++) {
 		SceneNode* orbitPoint = new SceneNode(renderer);
 		orbiterNodes->AddChild(orbitPoint);
-		orbitPoint->transform = Matrix4::Translation(Vector3(rand() % 400, (float)(rand() % 20), rand() % 400));
+		orbitPoint->transform = Matrix4::Translation(Vector3(rand() % 400, (float)(rand() % (int)heightMapWorldSize / 2), rand() % 400));
 		OrbiterNode* orbiter = new OrbiterNode(renderer, 1.0f + (rand() % 20), -10.0f + (rand() % 20));
 		orbitPoint->AddChild(orbiter);
 		orbiter->modelScale = Vector3(1.0f, 1.0f, 1.0f) * (3.0f + (rand() % 7));

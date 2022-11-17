@@ -15,7 +15,6 @@ void ProceduralHeightMap::Generate() {
 	GLuint bufferTex1, bufferTex2;
 	glGenTextures(1, &bufferTex1);
 	glGenTextures(1, &bufferTex2);
-	glGenTextures(1, &heightTex);
 	glBindTexture(GL_TEXTURE_2D, bufferTex1);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

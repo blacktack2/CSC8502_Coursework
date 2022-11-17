@@ -48,7 +48,7 @@ void main() {
 	vec3 viewDir = normalize(cameraPos - worldPos);
 	vec3 halfDir = normalize(incident + viewDir);
 
-	vec4 pushVal = vec4(normal, 0.0) * dot(viewDir, normal) * 100.0;
+	vec4 pushVal = vec4(normal, 0.0) * dot(viewDir, normal) * 5.0;
 	vec4 shadowProj = shadowMatrix * (vec4(worldPos, 1) + pushVal);
 
 	float shadow = 1.0;
