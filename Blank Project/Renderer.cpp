@@ -35,6 +35,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	combineShader = new Shader("combine.vert", "combine.frag");
 
+	fogShader = new Shader("fog.vert", "fog.frag");
+
+	presentShader = new Shader("basic.vert", "basic.frag");
+
 	noiseShader = new Shader("noise.vert", "noise.frag");
 
 	AddShader("skybox", skyboxShader);
@@ -49,6 +53,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	AddShader("combine", combineShader);
 
+	AddShader("fog", fogShader);
+
+	AddShader("present", presentShader);
+
 	AddShader("noise", noiseShader);
 
 	if(!skyboxShader->LoadSuccess() ||
@@ -56,6 +64,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 		!depthShader->LoadSuccess() || !heightmapDepthShader->LoadSuccess() ||
 		!lightShader->LoadSuccess() ||
 		!combineShader->LoadSuccess() ||
+		!fogShader->LoadSuccess() ||
+		!presentShader->LoadSuccess() ||
 		!noiseShader->LoadSuccess())
 		return;
 
@@ -66,6 +76,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glGenFramebuffers(1, &bufferFBO);
 	glGenFramebuffers(1, &shadowFBO);
 	glGenFramebuffers(1, &lightFBO);
+	glGenFramebuffers(1, &combineFBO);
 
 	const GLenum buffers[3] = {
 		GL_COLOR_ATTACHMENT0,
@@ -79,6 +90,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	GenerateScreenTexture(shadowTex, true, true);
 	GenerateScreenTexture(lightDiffuseTex);
 	GenerateScreenTexture(lightSpecularTex);
+	GenerateScreenTexture(sceneTex1);
+	GenerateScreenTexture(sceneTex2);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex, 0);
@@ -99,7 +112,21 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightDiffuseTex, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, lightSpecularTex, 0);
-	glDrawBuffers(3, buffers);
+	glDrawBuffers(2, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, combineFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTex1, 0);
+	glDrawBuffers(1, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fogFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTex2, 0);
+	glDrawBuffers(1, buffers);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return;
@@ -143,6 +170,16 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
 	glUniform1i(UniformLocation("mode"), 0);
 
+	BindShader(fogShader);
+	glUniform1i(UniformLocation("sceneTex"), 0);
+	glUniform1i(UniformLocation("depthTex"), 1);
+	glUniform1f(UniformLocation("fogMin"), 0.99232f);
+	glUniform1f(UniformLocation("fogMax"), 0.99717f);
+	glUniform3f(UniformLocation("fogColour"), 1.0f, 1.0f, 1.0f);
+
+	BindShader(presentShader);
+	glUniform1i(UniformLocation("diffuseTex"), 0);
+
 	init = true;
 }
 Renderer::~Renderer(void) {
@@ -153,11 +190,20 @@ Renderer::~Renderer(void) {
 	delete root;
 
 	delete skyboxShader;
+
 	delete sceneShader;
-	delete depthShader;
-	delete lightShader;
-	delete combineShader;
 	delete heightmapShader;
+
+	delete depthShader;
+	delete heightmapDepthShader;
+
+	delete lightShader;
+
+	delete combineShader;
+
+	delete fogShader;
+
+	delete presentShader;
 
 	delete noiseShader;
 
@@ -184,6 +230,8 @@ void Renderer::RenderScene() {
 	FillBuffers();
 	DrawLights();
 	CombineBuffers();
+	DrawFog();
+	PresentScene();
 
 	ClearNodeLists();
 }
@@ -252,6 +300,9 @@ void Renderer::DrawLights() {
 }
 
 void Renderer::CombineBuffers() {
+	glBindFramebuffer(GL_FRAMEBUFFER, combineFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+
 	BindShader(combineShader);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -265,6 +316,34 @@ void Renderer::CombineBuffers() {
 
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, lightSpecularTex);
+
+	quad->Draw();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::DrawFog() {
+	glBindFramebuffer(GL_FRAMEBUFFER, fogFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	BindShader(fogShader);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, sceneTex1);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
+
+	quad->Draw();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::PresentScene() {
+	BindShader(presentShader);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, sceneTex2);
 
 	quad->Draw();
 }

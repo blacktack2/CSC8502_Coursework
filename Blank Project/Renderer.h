@@ -19,6 +19,8 @@ protected:
 	void FillBuffers();
 	void DrawLights();
 	void CombineBuffers();
+	void DrawFog();
+	void PresentScene();
 
 	void BuildNodeLists(SceneNode* from);
 	void SortNodeLists();
@@ -55,6 +57,10 @@ protected:
 
 	Shader* combineShader = nullptr;
 
+	Shader* fogShader = nullptr;
+
+	Shader* presentShader = nullptr;
+
 	Shader* noiseShader = nullptr;
 
 	Matrix4 cameraViewMatrix;
@@ -64,6 +70,8 @@ protected:
 	GLuint bufferFBO = 0;
 	GLuint shadowFBO = 0;
 	GLuint lightFBO = 0;
+	GLuint combineFBO = 0;
+	GLuint fogFBO = 0;
 
 	GLuint bufferColourTex = 0;
 	GLuint bufferNormalTex = 0;
@@ -73,6 +81,9 @@ protected:
 
 	GLuint lightDiffuseTex = 0;
 	GLuint lightSpecularTex = 0;
+
+	GLuint sceneTex1 = 0;
+	GLuint sceneTex2 = 0;
 
 	const GLsizei SHADOWSIZE = 2048;
 };
