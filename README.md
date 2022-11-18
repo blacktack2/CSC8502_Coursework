@@ -13,6 +13,16 @@ GitHub URL: https://github.com/blacktack2/CSC8502_Coursework
 - 1 - Disable heightmap generation updates
 - 2 - Cycle between: Standard lighting; Normal view; Depth view
 
+## Screenshots
+
+![Screenshot](screenshots/Capture1.PNG)
+![Screenshot](screenshots/Capture2.PNG)
+![Screenshot](screenshots/Capture5.PNG)
+![Screenshot](screenshots/Capture3.PNG)
+Scene with post-processing
+![Screenshot](screenshots/Capture4.PNG)
+Same scene without post-processing
+
 ## License
 
 ================================================================================
