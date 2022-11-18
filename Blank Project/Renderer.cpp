@@ -363,7 +363,7 @@ void Renderer::ApplyBlur() {
 	BindShader(blurShader);
 
 	glActiveTexture(GL_TEXTURE0);
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 2; i++) {
 		glBindTexture(GL_TEXTURE_2D, sceneTex1);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTex2, 0);
 		glUniform1i(UniformLocation("horizontal"), 0);

@@ -34,13 +34,13 @@ void PHeightMapNode::Generate() {
 		);
 		AddChild(pointLightNode);
 		pointLightNode->lightMesh = sphere;
-	} else if (offsetX % 4 == 1 && offsetZ % 4 == 1) {
+	} else if (offsetX % 4 == 2 && offsetZ % 4 == 2) {
 		SceneNode* spotLightNode = new SpotLightNode(
 			renderer,
 			Vector3(10.0f, 100.0f, 0.0f),
-			Vector4(0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 1.0f),
-			200.0f,
-			Vector3(0.5f - (float)rand() / (float)RAND_MAX, 0.5f - (float)rand() / (float)RAND_MAX, 1.0f),
+			Vector4(0.7f + 0.3f * (float)rand() / (float)RAND_MAX, 0.7f + 0.3f * (float)rand() / (float)RAND_MAX, 0.7f + 0.3f * (float)rand() / (float)RAND_MAX, 1.0f),
+			500.0f,
+			Vector3(0.2f - 0.4 * (float)rand() / (float)RAND_MAX, 0.2f - 0.4 * (float)rand() / (float)RAND_MAX, 1.0f),
 			5.0f + 15.0f * (float)rand() / (float)RAND_MAX
 		);
 		AddChild(spotLightNode);
