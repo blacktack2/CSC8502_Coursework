@@ -2,6 +2,15 @@
 
 This is my coursework submission for the Newcastle University CSC8502 Module.
 
+## Usage
+
+### Controls
+
+- w,a,s,d,space,shift - Move forward,left,back,right,up,down
+- 0 - Toggle auto camera movement
+- 1 - Disable heightmap generation updates
+- 2 - Cycle between: Standard lighting; Normal view; Depth view
+
 ## License
 
 ================================================================================
