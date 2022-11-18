@@ -36,6 +36,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	combineShader = new Shader("combine.vert", "combine.frag");
 
 	fogShader = new Shader("fog.vert", "fog.frag");
+	blurShader = new Shader("blur.vert", "blur.frag");
 
 	presentShader = new Shader("basic.vert", "basic.frag");
 
@@ -53,6 +54,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	AddShader("combine", combineShader);
 
+	AddShader("blur", blurShader);
 	AddShader("fog", fogShader);
 
 	AddShader("present", presentShader);
@@ -64,7 +66,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 		!depthShader->LoadSuccess() || !heightmapDepthShader->LoadSuccess() ||
 		!lightShader->LoadSuccess() ||
 		!combineShader->LoadSuccess() ||
-		!fogShader->LoadSuccess() ||
+		!fogShader->LoadSuccess() || !blurShader->LoadSuccess() ||
 		!presentShader->LoadSuccess() ||
 		!noiseShader->LoadSuccess())
 		return;
@@ -77,6 +79,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glGenFramebuffers(1, &shadowFBO);
 	glGenFramebuffers(1, &lightFBO);
 	glGenFramebuffers(1, &combineFBO);
+	glGenFramebuffers(1, &blurFBO);
+	glGenFramebuffers(1, &fogFBO);
 
 	const GLenum buffers[3] = {
 		GL_COLOR_ATTACHMENT0,
@@ -118,6 +122,13 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 		return;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, combineFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTex1, 0);
+	glDrawBuffers(1, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTex1, 0);
 	glDrawBuffers(1, buffers);
 
@@ -171,6 +182,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glUniform3f(UniformLocation("ambientColour"), 0.0f, 0.0f, 0.0f);
 	glUniform1i(UniformLocation("mode"), 0);
 
+	BindShader(blurShader);
+	glUniform1i(UniformLocation("sceneTex"), 0);
+
 	BindShader(fogShader);
 	glUniform1i(UniformLocation("sceneTex"), 0);
 	glUniform1i(UniformLocation("depthTex"), 1);
@@ -179,11 +193,12 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glUniform3f(UniformLocation("fogColour"), 1.0f, 1.0f, 1.0f);
 
 	BindShader(presentShader);
-	glUniform1i(UniformLocation("diffuseTex"), 0);
+	glUniform1i(UniformLocation("sceneTex"), 0);
 
 	SetPostProcess(true);
 	init = true;
 }
+
 Renderer::~Renderer(void) {
 	delete camera;
 
@@ -203,6 +218,7 @@ Renderer::~Renderer(void) {
 
 	delete combineShader;
 
+	delete blurShader;
 	delete fogShader;
 
 	delete presentShader;
@@ -218,6 +234,8 @@ Renderer::~Renderer(void) {
 	glDeleteFramebuffers(1, &bufferFBO);
 	glDeleteFramebuffers(1, &shadowFBO);
 	glDeleteFramebuffers(1, &lightFBO);
+	glDeleteFramebuffers(1, &fogFBO);
+	glDeleteFramebuffers(1, &blurFBO);
 }
 
 void Renderer::RenderScene() {
@@ -233,6 +251,7 @@ void Renderer::RenderScene() {
 	DrawLights();
 	CombineBuffers();
 	if (postProcess) {
+		ApplyBlur();
 		DrawFog();
 	}
 	PresentScene();
@@ -338,9 +357,31 @@ void Renderer::CombineBuffers() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Renderer::ApplyBlur() {
+	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO);
+
+	BindShader(blurShader);
+
+	glActiveTexture(GL_TEXTURE0);
+	for (int i = 0; i < 4; i++) {
+		glBindTexture(GL_TEXTURE_2D, sceneTex1);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTex2, 0);
+		glUniform1i(UniformLocation("horizontal"), 0);
+
+		quad->Draw();
+
+		glBindTexture(GL_TEXTURE_2D, sceneTex2);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneTex1, 0);
+		glUniform1i(UniformLocation("horizontal"), 1);
+
+		quad->Draw();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void Renderer::DrawFog() {
 	glBindFramebuffer(GL_FRAMEBUFFER, fogFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
 
 	BindShader(fogShader);
 
@@ -349,9 +390,6 @@ void Renderer::DrawFog() {
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
-
-	Matrix4 invViewProj = (cameraProjMatrix * cameraViewMatrix).Inverse();
-	glUniformMatrix4fv(UniformLocation("inverseProjView"), 1, false, invViewProj.values);
 
 	quad->Draw();
 
@@ -362,7 +400,7 @@ void Renderer::PresentScene() {
 	BindShader(presentShader);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, sceneTexOut);
+	glBindTexture(GL_TEXTURE_2D, postProcess ? sceneTex2 : sceneTex1);
 
 	quad->Draw();
 }

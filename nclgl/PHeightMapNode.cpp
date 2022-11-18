@@ -25,7 +25,7 @@ void PHeightMapNode::Generate() {
 	heightMap.worldZ = heightMapResolution;
 	heightMap.Generate();
 
-	if (offsetX % 2 && offsetZ % 2) {
+	if (offsetX % 4 == 0 && offsetZ % 4 == 0) {
 		SceneNode* pointLightNode = new PointLightNode(
 			renderer,
 			Vector3(0.0f, 100.0f, 0.0f),
@@ -34,7 +34,7 @@ void PHeightMapNode::Generate() {
 		);
 		AddChild(pointLightNode);
 		pointLightNode->lightMesh = sphere;
-	} else if (!(offsetX % 2) && !(offsetZ % 2)) {
+	} else if (offsetX % 4 == 1 && offsetZ % 4 == 1) {
 		SceneNode* spotLightNode = new SpotLightNode(
 			renderer,
 			Vector3(10.0f, 100.0f, 0.0f),

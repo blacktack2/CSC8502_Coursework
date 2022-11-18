@@ -21,6 +21,7 @@ protected:
 	void FillBuffers();
 	void DrawLights();
 	void CombineBuffers();
+	void ApplyBlur();
 	void DrawFog();
 	void PresentScene();
 
@@ -60,6 +61,7 @@ protected:
 	Shader* combineShader = nullptr;
 
 	Shader* fogShader = nullptr;
+	Shader* blurShader = nullptr;
 
 	Shader* presentShader = nullptr;
 
@@ -73,6 +75,7 @@ protected:
 	GLuint shadowFBO = 0;
 	GLuint lightFBO = 0;
 	GLuint combineFBO = 0;
+	GLuint blurFBO = 0;
 	GLuint fogFBO = 0;
 
 	GLuint bufferColourTex = 0;

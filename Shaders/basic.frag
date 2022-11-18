@@ -1,5 +1,5 @@
 #version 330 core
-uniform sampler2D diffuseTex;
+uniform sampler2D sceneTex;
 
 in Vertex {
 	vec2 texCoord;
@@ -8,5 +8,5 @@ in Vertex {
 out vec4 fragColour;
 
 void main() {
-	fragColour = texture(diffuseTex, IN.texCoord);
+	fragColour = texture(sceneTex, IN.texCoord);
 }

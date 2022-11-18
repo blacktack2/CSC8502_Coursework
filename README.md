@@ -2,14 +2,20 @@
 
 This is my coursework submission for the Newcastle University CSC8502 Module.
 
+## Notes for markers
+
+Since the demo I have added:
+- Post-processing blur effect
+
 ## Usage
 
 ### Controls
 
 - w,a,s,d,space,shift - Move forward,left,back,right,up,down
 - 0 - Toggle auto camera movement
-- 1 - Disable heightmap generation updates
+- 1 - Toggle heightmap generation updates
 - 2 - Cycle between: Standard lighting; Normal view; Depth view
+- 3 - Toggle post-processing
 
 ## License
 

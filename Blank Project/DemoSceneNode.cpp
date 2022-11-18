@@ -81,6 +81,8 @@ void DemoSceneNode::Update(float dt) {
 		renderer.SetShaderUniformi("combine", "mode", renderMode);
 		renderer.SetPostProcess(renderMode == 0);
 	}
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_3))
+		renderer.SetPostProcess(!renderer.IsPostProcessing());
 	SceneNode::Update(dt);
 	static float offset = 0.0;
 	offset += dt;
