@@ -436,6 +436,8 @@ void Renderer::DrawNodeLights(SceneNode* node) {
 		SetShaderLight(node->light);
 		Matrix4 shadowMatrix = depthProjMatrix * depthViewMatrix;
 		glUniformMatrix4fv(UniformLocation("shadowMatrix"), 1, false, shadowMatrix.values);
+		glUniformMatrix4fv(UniformLocation("viewMatrix"), 1, false, cameraViewMatrix.values);
+		glUniformMatrix4fv(UniformLocation("projMatrix"), 1, false, cameraProjMatrix.values);
 
 		glBlendFunc(GL_ONE, GL_ONE);
 		glCullFace(GL_FRONT);

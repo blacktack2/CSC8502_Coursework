@@ -7,6 +7,7 @@ PHeightMapMasterNode::PHeightMapMasterNode(OGLRenderer& renderer, Camera& camera
 
 	quad = Mesh::GenerateQuad();
 	heightMapQuad = Mesh::GeneratePatchQuad(heightMapWorldSize * 0.10);
+	sphere = Mesh::LoadFromMeshFile("Sphere.msh");
 	UpdateHeightMaps(0, 0, true);
 }
 
@@ -56,7 +57,7 @@ void PHeightMapMasterNode::UpdateHeightMaps(int offsetX, int offsetZ, bool fromS
 }
 
 void PHeightMapMasterNode::CreateHeightMap(int x, int z) {
-	PHeightMapNode* heightMap = new PHeightMapNode(renderer, quad, heightMapQuad, x, z);
+	PHeightMapNode* heightMap = new PHeightMapNode(renderer, quad, heightMapQuad, sphere, x, z);
 	AddChild(heightMap);
 	childHeightMaps.emplace((x + 128) | ((z + 128) << 8), heightMap);
 	heightMap->transform = Matrix4::Translation(Vector3(x * heightMapWorldSize, 0.0f, z * heightMapWorldSize));

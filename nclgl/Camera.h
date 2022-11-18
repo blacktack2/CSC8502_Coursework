@@ -31,10 +31,10 @@ protected:
 
 	Vector3 position;
 
-	bool autoMove = true;
+	bool autoMove = false;
 	float autoTime = 0.0f;
 
-	const float AUTO_SPEED = 2.0f;
+	const float AUTO_SPEED = 1.0f;
 
 	struct KeyFrame {
 		float time;

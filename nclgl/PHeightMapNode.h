@@ -4,7 +4,7 @@
 
 class PHeightMapNode : public SceneNode {
 public:
-	PHeightMapNode(OGLRenderer& renderer, Mesh* quad, Mesh* patchQuad, int x, int z);
+	PHeightMapNode(OGLRenderer& renderer, Mesh* quad, Mesh* sphere, Mesh* patchQuad, int x, int z);
 	~PHeightMapNode();
 
 	void Generate();
@@ -18,6 +18,8 @@ public:
 protected:
 	virtual void PreDrawMesh() override;
 	virtual void PreDrawMeshDepth() override;
+
+	Mesh* sphere = nullptr;
 
 	int offsetX;
 	int offsetZ;

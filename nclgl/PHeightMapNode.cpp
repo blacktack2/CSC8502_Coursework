@@ -1,6 +1,7 @@
 #include "PHeightMapNode.h"
+#include "../nclgl/LightNode.h"
 
-PHeightMapNode::PHeightMapNode(OGLRenderer& renderer, Mesh* quad, Mesh* patchQuad, int x, int z) : SceneNode(renderer), heightMap(renderer, quad, x, z) {
+PHeightMapNode::PHeightMapNode(OGLRenderer& renderer, Mesh* quad, Mesh* patchQuad, Mesh* sphere, int x, int z) : SceneNode(renderer), heightMap(renderer, quad, x, z), sphere(sphere) {
 	mesh = patchQuad;
 	offsetX = x;
 	offsetZ = z;
@@ -23,10 +24,33 @@ void PHeightMapNode::Generate() {
 	heightMap.worldX = heightMapResolution;
 	heightMap.worldZ = heightMapResolution;
 	heightMap.Generate();
+
+	if (offsetX % 2 && offsetZ % 2) {
+		SceneNode* pointLightNode = new PointLightNode(
+			renderer,
+			Vector3(0.0f, 100.0f, 0.0f),
+			Vector4(0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 1.0f),
+			80.0f
+		);
+		AddChild(pointLightNode);
+		pointLightNode->lightMesh = sphere;
+	} else if (!(offsetX % 2) && !(offsetZ % 2)) {
+		SceneNode* spotLightNode = new SpotLightNode(
+			renderer,
+			Vector3(10.0f, 100.0f, 0.0f),
+			Vector4(0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 0.5f + 0.5f * (float)rand() / (float)RAND_MAX, 1.0f),
+			200.0f,
+			Vector3(0.5f - (float)rand() / (float)RAND_MAX, 0.5f - (float)rand() / (float)RAND_MAX, 1.0f),
+			5.0f + 15.0f * (float)rand() / (float)RAND_MAX
+		);
+		AddChild(spotLightNode);
+		spotLightNode->lightMesh = sphere;
+	}
 }
 
 void PHeightMapNode::DeGenerate() {
 	heightMap.DeGenerate();
+	ClearChildren();
 }
 
 void PHeightMapNode::PreDrawMesh() {

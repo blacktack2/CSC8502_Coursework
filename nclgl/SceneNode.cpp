@@ -59,8 +59,11 @@ void SceneNode::DrawMeshDepth() {
 }
 
 void SceneNode::DrawLight() {
-	if (lightMesh)
+	if (lightMesh) {
+		Matrix4 model = GetWorldTransform() * Matrix4::Scale(modelScale);
+		glUniformMatrix4fv(renderer.UniformLocation("modelMatrix"), 1, false, model.values);
 		lightMesh->Draw();
+	}
 }
 
 void SceneNode::PreDrawMesh() {

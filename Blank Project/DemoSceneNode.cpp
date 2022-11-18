@@ -25,30 +25,26 @@ DemoSceneNode::DemoSceneNode(OGLRenderer& renderer, Camera& camera) : SceneNode(
 	heightMapMaster = new PHeightMapMasterNode(renderer, camera);
 	AddChild(heightMapMaster);
 
-	pointLightsNode = new SceneNode(renderer);
-	//AddChild(pointLightsNode);
-
-	SceneNode* pointLightNode = new PointLightNode(
-		renderer,
-		Vector3(10.0f, 100.0f, 0.0f),
-		Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-		1000.0f
-	);
-	pointLightsNode->AddChild(pointLightNode);
-	pointLightNode->lightMesh = sphere;
-
-	spotLightsNode = new SceneNode(renderer);
-	//AddChild(spotLightsNode);
+	for (int i = 0; i < 10; i++) {
+		SceneNode* pointLightNode = new PointLightNode(
+			renderer,
+			Vector3(10.0f, 100.0f, 0.0f),
+			Vector4(0.0f, 1.0f, 1.0f, 1.0f),
+			200.0f
+		);
+		AddChild(pointLightNode);
+		//pointLightNode->lightMesh = sphere;
+	}
 
 	SceneNode* spotLightNode = new SpotLightNode(
 		renderer,
 		Vector3(0.0f, 500.0f, 150.0f),
 		Vector4(1.0f, 0.0f, 0.0f, 1.0f),
-		2500.0f,
+		500.0f,
 		Vector3(1.0f, -1.0f, 1.0f),
 		40.0f
 	);
-	spotLightsNode->AddChild(spotLightNode);
+	AddChild(spotLightNode);
 	spotLightNode->lightMesh = sphere;
 
 	sunNode = new SunNode(renderer, quad);

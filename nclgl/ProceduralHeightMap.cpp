@@ -35,7 +35,6 @@ void ProceduralHeightMap::Generate() {
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-
 	Shader* noiseShader = renderer.GetShader("noise");
 	glUseProgram(noiseShader->GetProgram());
 

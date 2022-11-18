@@ -20,6 +20,7 @@ protected:
 
 	Mesh* quad;
 	Mesh* heightMapQuad;
+	Mesh* sphere;
 
 	Camera& camera;
 
@@ -30,7 +31,7 @@ protected:
 	int cameraOffsetX = 0;
 	int cameraOffsetZ = 0;
 
-	int generationRadius = 5;
+	int generationRadius = 3;
 
 	std::unordered_map<int, PHeightMapNode*> childHeightMaps{};
 };

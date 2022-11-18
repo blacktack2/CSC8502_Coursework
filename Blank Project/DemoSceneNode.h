@@ -12,8 +12,6 @@ public:
 	virtual void Update(float dt);
 protected:
 	PHeightMapMasterNode* heightMapMaster = nullptr;
-	SceneNode* pointLightsNode = nullptr;
-	SceneNode* spotLightsNode = nullptr;
 	SceneNode* sunNode = nullptr;
 
 	Mesh* sphere = nullptr;
